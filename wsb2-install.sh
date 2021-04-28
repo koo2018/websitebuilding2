@@ -1,0 +1,360 @@
+#!/bin/bash
+
+apt-get -y update 
+
+apt-get -y upgrade 
+
+apt-get -y install locales ca-certificates sudo wget ssh 
+
+localedef -i ru_RU -f UTF-8 ru_RU.UTF-8 
+
+clear 
+
+echo -e "ADDING NEW USER...\n\n" 
+
+adduser --gecos "" teacher 
+
+usermod -a -G sudo teacher 
+
+new_wordpress_url="https://ru.wordpress.org/latest-ru_RU.zip"
+
+curuser=$LOGNAME
+
+curhom=`echo $HOME | sed -e 's/\//\\\\\//g'`
+
+echo -e "Вас приветствует система установки и настройки виртуального хостинга"
+
+if [ -f ".websitebuilding" ]; then 
+
+echo "ОШИБКА! Установка системы уже произведена"
+echo 
+echo "Выход"
+exit; fi
+
+echo "
+##############################################################################
+#                                                                            #
+#   Программа установит набор компонентов LAMP, а также скачает и настроит   #
+#   необходимые скрипты для автоматизации создания студенческих аккаунтов.   #
+#   По завершению работы программы сервер перезагрузится. После этого можно  #
+#   зайти обратно под учительским логином и начать работу.                   #
+#                                                                            #
+##############################################################################
+"
+
+echo -n "Укажите базовый домен вашего сервера, например, ya.ru: "
+
+read domain
+
+until [[ $passwd_ok == 'ok' && $dbrootpassword != '' ]]
+
+do
+
+	echo -ne "\nУкажите пароль для базы данных: "
+
+	while IFS= read -p "$prompt" -r -s -n 1 char
+
+	do
+    	# Enter - accept password
+    	if [[ $char == $'\0' ]] ; then
+        	break
+    	fi
+    	# Backspace
+    	if [[ $char == $'\177' ]] ; then
+        	prompt=$'\b \b'
+        	dbrootpassword="${dbrootpassword%?}"
+    	else
+        	prompt='*'
+        	dbrootpassword+="$char"
+    	fi
+	done
+
+	prompt=''
+
+	echo -ne "\nВведите пароль еще раз: "
+
+	while IFS= read -p "$prompt" -r -s -n 1 char
+
+	do
+    	# Enter - accept password
+    	if [[ $char == $'\0' ]] ; then
+        	break
+    	fi
+    	# Backspace
+    	if [[ $char == $'\177' ]] ; then
+        	prompt=$'\b \b'
+        	dbrootpassword1="${dbrootpassword1%?}"
+    	else
+        	prompt='*'
+        	dbrootpassword1+="$char"
+    	fi
+	done
+
+	if [[ $dbrootpassword == $dbrootpassword1 && $dbrootpassword != '' ]] ; then
+	
+    	echo -e "\nПароль успешно установлен"
+    
+    	passwd_ok="ok"
+    	
+	elif [[ $dbrootpassword == '' ]] ; then
+    	
+    	echo -e "\nПароль не может быть пустым"
+    
+    	passwd_ok='ok'
+    
+    	prompt=''
+    
+	else
+    	
+    	echo -e "\nПароль не не совпадает. Введите заново"
+    
+    	ok=''
+    
+    	prompt=''
+    
+    	dbrootpassword=''
+    	
+    	dbrootpassword1=''
+	
+	fi	
+
+done
+
+#  Установить пароль для студентов
+
+passwd_ok=''
+prompt=''
+
+until [[ $passwd_ok == 'ok' && $dbuserpassword != '' ]]
+
+do
+
+	echo -ne "\nУкажите студенческий пароль для базы данных: "
+
+	while IFS= read -p "$prompt" -r -s -n 1 char
+
+	do
+    	# Enter - accept password
+    	if [[ $char == $'\0' ]] ; then
+        	break
+    	fi
+    	# Backspace
+    	if [[ $char == $'\177' ]] ; then
+        	prompt=$'\b \b'
+        	dbuserpassword="${dbuserpassword%?}"
+    	else
+        	prompt='*'
+        	dbuserpassword+="$char"
+    	fi
+	done
+
+	prompt=''
+
+	echo -ne "\nВведите студенческий пароль еще раз: "
+
+	while IFS= read -p "$prompt" -r -s -n 1 char
+
+	do
+    	# Enter - accept password
+    	if [[ $char == $'\0' ]] ; then
+        	break
+    	fi
+    	# Backspace
+    	if [[ $char == $'\177' ]] ; then
+        	prompt=$'\b \b'
+        	dbuserpassword1="${dbuserpassword1%?}"
+    	else
+        	prompt='*'
+        	dbuserpassword1+="$char"
+    	fi
+	done
+
+	if [[ $dbuserpassword == $dbuserpassword1 && $dbuserpassword != '' ]] ; then
+	
+    	echo -e "\nПароль для студентов успешно установлен"
+    
+    	passwd_ok="ok"
+    	
+	elif [[ $dbuserpassword == '' ]] ; then
+    	
+    	echo -e "\nПароль не может быть пустым"
+    
+    	passwd_ok='ok'
+    
+    	prompt=''
+    
+	else
+    	
+    	echo -e "\nПароль не не совпадает. Введите заново"
+    
+    	ok=''
+    
+    	prompt=''
+    
+    	dbuserpassword=''
+    	
+    	dbuserpassword1=''
+	
+	fi	
+
+done
+
+echo
+
+echo -e "\nБазовый сайт будет располагаться по адресу http://$domain"
+
+echo -e "\nСтуденческие сайты будут располагаться по адресу http://studentname.$domain"
+
+sudo apt install apt-transport-https lsb-release ca-certificates wget -y
+
+#sudo wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg 
+
+#sudo sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
+
+#sudo apt update
+
+sudo apt-get -y install mc lynx man proftpd htop zip unzip ca-certificates apache2 bash-completion whois 
+
+sudo apt-get -y install mariadb-client mariadb-server php php-fpm php-gd php-mysql php-curl php-json libapache2-mod-php
+
+sudo apt-get -y install php-mbstring php-xml memcached php-memcache 
+
+sudo cp /etc/apache2/conf-available/charset.conf{,.bak}  
+
+sudo sh -c "sed -e 's/#AddDefaultCharset UTF-8/AddDefaultCharset UTF-8/' /etc/apache2/conf-available/charset.conf > /etc/apache2/conf-available/charset.conf.new" 
+
+sudo mv /etc/apache2/conf-available/charset.conf{.new,} 
+
+sudo cp /etc/apache2/sites-available/000-default.conf{,.bak}  
+
+sudo sh -c "sed -e 's/VirtualHost \*:80/VirtualHost $domain:80/' /etc/apache2/sites-available/000-default.conf > /etc/apache2/sites-available/000-default.conf.new" 
+
+sudo mv /etc/apache2/sites-available/000-default.conf{.new,} 
+
+sudo a2enmod proxy_fcgi setenvif rewrite
+
+php_version=`php -i | grep "Loaded Configuration File" | awk -F "=>" '{print $2}' | awk -F "/" '{print $4}'`
+
+sudo a2enmod php$php_version
+
+cd 
+
+wget $new_wordpress_url 
+
+unzip latest-ru_RU.zip 
+
+rm -f latest-ru_RU.zip 
+
+wget https://raw.githubusercontent.com/koo2018/websitebuilding/master/newstudent
+
+wget https://raw.githubusercontent.com/koo2018/websitebuilding/master/delstudent 
+
+wget https://raw.githubusercontent.com/koo2018/websitebuilding/master/tarbkp 
+
+wget https://raw.githubusercontent.com/koo2018/websitebuilding/master/zipbkp 
+
+echo "Настраиваем скрипт newstudent"
+
+sudo sh -c "sed -e 's/hname=\"\"/hname=\"$domain\"/' newstudent > newstudent.new" 
+
+sudo mv newstudent{.new,} 
+
+sudo sh -c "sed -e 's/rootdbpasswd=\"\"/rootdbpasswd=\"$dbrootpassword\"/' newstudent > newstudent.new" 
+
+sudo mv newstudent{.new,} 
+
+sudo sh -c "sed -e 's/dbpasswd=\"\"/dbpasswd=\"$dbuserpassword\"/' newstudent > newstudent.new" 
+
+sudo mv newstudent{.new,} 
+
+sudo chown $curuser:$curuser newstudent
+
+chmod 700 ./newstudent
+
+echo "Настраиваем скрипт delstudent"
+
+sudo sh -c "sed -e 's/rootdbpasswd=\"\"/rootdbpasswd=\"$dbrootpassword\"/' delstudent > delstudent.new" 
+
+sudo mv delstudent{.new,} 
+
+sudo chown $curuser:$curuser delstudent
+
+chmod 700 ./delstudent
+
+echo "Настраиваем скрипт tarbkp"
+
+sudo sh -c "sed -e 's/TEACHER_NAME=\"\"/TEACHER_NAME=\"$curuser\"/' tarbkp > tarbkp.new" 
+
+sudo mv tarbkp{.new,} 
+
+sudo sh -c "sed -e 's/BACKUPS_DIR=\"\"/BACKUPS_DIR=\"$curhom\/backups\"/' tarbkp > tarbkp.new" 
+
+sudo mv tarbkp{.new,} 
+
+sudo sh -c "sed -e 's/root -p1234/root -p$dbrootpassword/' tarbkp > tarbkp.new" 
+
+sudo mv tarbkp{.new,} 
+
+
+sudo chown $curuser:$curuser tarbkp
+
+chmod 700 ./tarbkp
+
+echo "Настраиваем скрипт zipbkp"
+
+sudo sh -c "sed -e 's/TEACHER_NAME=\"\"/TEACHER_NAME=\"$curuser\"/' zipbkp > zipbkp.new" 
+
+sudo mv zipbkp{.new,} 
+
+sudo sh -c "sed -e 's/BACKUPS_DIR=\"\"/BACKUPS_DIR=\"$curhom\/backups\"/' zipbkp > zipbkp.new" 
+
+sudo mv zipbkp{.new,} 
+
+sudo sh -c "sed -e 's/root -p1234/root -p$dbrootpassword/' zipbkp > zipbkp.new" 
+
+sudo mv zipbkp{.new,} 
+
+sudo chown $curuser:$curuser zipbkp
+
+chmod 700 ./zipbkp
+
+echo -e "\ny\n$dbrootpassword\n$dbrootpassword\ny\ny\ny\ny" | sudo /usr/bin/mysql_secure_installation
+
+echo -e "use mysql; update user set plugin='' where User='root'; flush privileges;" | sudo mysql 
+
+sudo cp /etc/ssh/sshd_config{,.bak} 
+
+sudo sh -c "sed -e 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config > /etc/ssh/sshd_config.new"
+
+sudo mv /etc/ssh/sshd_config{.new,} 
+
+sudo cp  /etc/mysql/mariadb.conf.d/50-server.cnf{,.bak} 
+
+sudo sh -c "sed -e 's/#max_connections/max_connections/' /etc/mysql/mariadb.conf.d/50-server.cnf > /etc/mysql/mariadb.conf.d/50-server.cnf.new"
+
+sudo mv /etc/mysql/mariadb.conf.d/50-server.cnf{.new,} 
+
+sudo sh -c "sed -e 's/max_connections        = 100/max_connections        = 200/' /etc/mysql/mariadb.conf.d/50-server.cnf > /etc/mysql/mariadb.conf.d/50-server.cnf.new" 
+
+sudo mv /etc/mysql/mariadb.conf.d/50-server.cnf{.new,}  
+
+php_path=`php -i | grep "Loaded Configuration File" | awk -F "=>" '{print $2}'` 
+
+php_path=`echo "${php_path/cli/fpm}"`
+
+sudo cp  $php_path{,.bak} 
+
+sudo sh -c "sed -e 's/upload_max_filesize = 2M/upload_max_filesize = 50M/' $php_path > $php_path.new"
+
+sudo mv $php_path{.new,}  
+
+echo -e ' # Generated by NOT /usr/bin/select-editor\nSELECTED_EDITOR="/usr/bin/mcedit"' > .selected_editor 
+
+echo -e '\n\n EVERYTHING IS DONE. REBOOTING . . . \n\n DO NOT FOREGET TO DROP IN AGAIN \n\n JUST TYPE TWO EXCLAMATION MARKS\n\n !!\n\n' 
+
+touch .websitebuilding
+
+sudo rm -f wsite_install
+
+sudo reboot now 
+
