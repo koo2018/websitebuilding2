@@ -1,15 +1,46 @@
 #!/bin/bash
 
-echo "
-##############################################################################
-#                                                                            #
-#   This script is going to install a set of free software for making it     #
-#   easier to hold seminars on web site buildings a   #
-#   По завершению работы программы сервер перезагрузится. После этого можно  #
-#   зайти обратно под учительским логином и начать работу.                   #
-#                                                                            #
-##############################################################################
+if [ "$EUID" -ne 0 ]
+  then echo -e "\nThis script requires root privileges\n"
+  exit
+fi
+
+clear
+
+echo "Web Site Building 2.0
+
+#################################################################################
+                                                                            	
+   Dear friends!  								
+   										
+   This script is going to install a set of free software for making it     	
+   easier to hold seminars on web site buildings and internet technologies. 	
+  										
+   This script allows to choose language (en, ru), platform (Apache2, Nginx) 	
+										
+   It helps to create and manage students accounts and its groups. These	 
+   accounts have everything for traing in web: personal directory for		 
+   html files, wordpress downloaded and ready to be installed, ssh and ftp	 
+   access etc.	
+										
+   All manipulations could be done both in command line and web interfaces.	
+
+#################################################################################
 "
+
+read  -n 1 -s -p "Please press any key to continue or ctrl-c for abort..."
+
+clear
+
+echo "Firstly, we have to ask you 7 questions:
+"
+
+read -p "Choose your language [en],ru: " language
+language=${language:-en}
+echo $language
+
+
+
 
 apt-get -y update 
 
