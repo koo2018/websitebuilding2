@@ -315,7 +315,7 @@ mkdir -p `eval echo ~$curuser/.wsb2/www/teacher`
 
 chown -R  $curuser:$curuser `eval echo ~$curuser/.wsb2`
 
-chmod -R 600 `eval echo ~$curuser/.wsb2`
+chmod -R 660 `eval echo ~$curuser/.wsb2`
 
 exit
 
@@ -333,11 +333,12 @@ apt-get -qq -y install lsb-release ca-certificates sudo wget ssh
 
 apt-get -qq -y install mc lynx man proftpd htop zip unzip bash-completion whois
 
-apt-get -qq -y install php php-gd php-mysql php-curl php-json php-mbstring php-xml php-opcache
+apt-get -qq -y install php-gd php-mysql php-curl php-json php-mbstring php-xml php-opcache
 
 case $webserver in
   1)
     echo "Nginx + Apache2"
+    
     apt-get -y install nginx php-fpm
 
     ;;
