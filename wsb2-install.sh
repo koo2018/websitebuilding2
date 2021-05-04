@@ -1,5 +1,5 @@
 #!/bin/bash
- 
+
 
 if [[ `cat /etc/issue.net` != 'Debian GNU/Linux 10' ]]
 then
@@ -303,13 +303,21 @@ echo -e "STARTING SOFTWARE PACKAGES INSTALLATION. IT TAKES SOME TIME...\n"
 
 cd
 
-mkdir -p .wsb2
+mkdir -p `eval echo ~$curuser/.wsb2`
 
-mkdir -p .wsb2/bin
+mkdir -p `eval echo ~$curuser/.wsb2/bin`
 
-mkdir -p .wsb2/src
+mkdir -p `eval echo ~$curuser/.wsb2/src`
 
-chmod -R 600 .wsb2
+mkdir -p `eval echo ~$curuser/.wsb2/www/main`
+
+mkdir -p `eval echo ~$curuser/.wsb2/www/teacher`
+
+chown -R  $curuser:$curuser `eval echo ~$curuser/.wsb2`
+
+chmod -R 600 `eval echo ~$curuser/.wsb2`
+
+exit
 
 apt-get -qq -y update
 
@@ -321,7 +329,7 @@ apt-get -qq -y install locales
 
 localedef -i ru_RU -f UTF-8 ru_RU.UTF-8
 
-apt-get -qq install lsb-release ca-certificates sudo wget ssh -y
+apt-get -qq -y install lsb-release ca-certificates sudo wget ssh
 
 apt-get -qq -y install mc lynx man proftpd htop zip unzip bash-completion whois
 
