@@ -291,11 +291,15 @@ curhom=`echo $HOME | sed -e 's/\//\\\\\//g'`
 
 ######################################################################
 
-echo -e "ADDING NEW USER...\n\n"
+echo -e "ADDING NEW MAIN USER $curuser\n"
 
-adduser --gecos "" $curuser
+adduser --quiet --gecos "" $curuser
 
 usermod -a -G sudo $curuser
+
+echo -e "\nUSER $curuser IS ADDED AND PROVIDED WITH SUDO PRIVILEGES\n\n"
+
+echo -e "STARTING SOFTWARE PACKAGES INSTALLATION. IT TAKES SOME TIME...\n"
 
 cd
 
@@ -314,8 +318,6 @@ apt -y upgrade
 apt -y install locales ca-certificates sudo wget ssh
 
 localedef -i ru_RU -f UTF-8 ru_RU.UTF-8
-
-clear
 
 apt install apt-transport-https lsb-release ca-certificates wget -y
 
