@@ -1,5 +1,5 @@
 #!/bin/bash
-
+ 
 
 if [[ `cat /etc/issue.net` != 'Debian GNU/Linux 10' ]]
 then
