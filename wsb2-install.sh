@@ -1,7 +1,16 @@
 #!/bin/bash
 
+
+if [[ `cat /etc/issue.net` != 'Debian GNU/Linux 10' ]]
+then
+  echo -e "\nThis script requires Debian GNU/Linux 10.\nThis issue is: "
+  echo -e `cat /etc/issue.net`
+  echo -e "\nStoped.\n"
+  exit
+fi
+
 if [ "$EUID" -ne 0 ]
-  then echo -e "\nThis script requires root privileges\n"
+  then echo -e "\nThis script requires root privileges.\n\nStoped.\n"
   exit
 fi
 
@@ -10,20 +19,21 @@ clear
 echo "Web Site Building 2.0
 
 #################################################################################
-                                                                            	
-   Dear friends!  								
-   										
-   This script is going to install a set of free software for making it     	
-   easier to hold seminars on web site buildings and internet technologies. 	
-  										
-   This script allows to choose language (en, ru), platform (Apache2, Nginx) 	
-										
-   It helps to create and manage students accounts and its groups. These	 
-   accounts have everything for traing in web: personal directory for		 
-   html files, wordpress downloaded and ready to be installed, ssh and ftp	 
-   access etc.	
-										
-   All manipulations could be done both in command line and web interfaces.	
+
+   Dear friends!
+
+   This script is going to install a set of free software for making it
+   easier to hold seminars on web site buildings and internet technologies.
+   It's a deeply managable hosting for any large number of students.
+
+   This script allows to choose language (en, ru), platform (Apache2, Nginx)
+
+   It helps to create and manage students accounts and its groups. These
+   accounts have everything for traing in web: personal directory for
+   html files, wordpress downloaded and ready to be installed, ssh and ftp
+   access etc.
+
+   All manipulations could be done both in command line and web interfaces.
 
 #################################################################################
 "
@@ -35,64 +45,73 @@ clear
 echo "Firstly, we have to ask you 7 questions:
 "
 
-read -p "Choose your language [en],ru: " language
-language=${language:-en}
-echo $language
-
-
-
-
-apt-get -y update 
-
-apt-get -y upgrade 
-
-apt-get -y install locales ca-certificates sudo wget ssh 
-
-localedef -i ru_RU -f UTF-8 ru_RU.UTF-8 
-
-clear 
-
-echo -e "ADDING NEW USER...\n\n" 
-
-adduser --gecos "" teacher 
-
-usermod -a -G sudo teacher 
-
-new_wordpress_url="https://ru.wordpress.org/latest-ru_RU.zip"
-
-curuser=$LOGNAME
-
-curhom=`echo $HOME | sed -e 's/\//\\\\\//g'`
-
-echo -e "Вас приветствует система установки и настройки виртуального хостинга"
-
-if [ -f ".websitebuilding" ]; then 
-
-echo "ОШИБКА! Установка системы уже произведена"
-echo 
-echo "Выход"
-exit; fi
-
-echo "
-##############################################################################
-#                                                                            #
-#   Программа установит набор компонентов LAMP, а также скачает и настроит   #
-#   необходимые скрипты для автоматизации создания студенческих аккаунтов.   #
-#   По завершению работы программы сервер перезагрузится. После этого можно  #
-#   зайти обратно под учительским логином и начать работу.                   #
-#                                                                            #
-##############################################################################
+echo "1.
+You can choose a languge. English is default language.
+If you would like to install your own language pack, now choose English.
+en. English
+ru. Russian
 "
 
-echo -n "Укажите базовый домен вашего сервера, например, ya.ru: "
+until [[ $language == 'en' || $language == 'ru' ]]
 
-read domain
+do
+  read -p "Choose your language [en],ru: " language
+  language=${language:-en}
+  echo
+done
+
+echo "2.
+Now you have to choose a webserver:
+1. Nginx + Apache2
+2. Apache2
+"
+until [[ $webserver == '1' || $webserver == '2' ]]
+
+do
+  read -p "Choose a webserver ([1]/2): " webserver
+  webserver=${webserver:-1}
+  echo
+done
+
+
+
+echo "3.
+Please choose username for a main user or lecturer or teacher:
+"
+userexists=1
+
+until [[ $userexists == 0 ]]
+do
+  read -p "Choose a main user name ([teacher]): " curuser
+  curuser=${curuser:-teacher}
+  echo
+  userexists=`grep -c "^$curuser:" /etc/passwd`
+  if [[ $userexists -eq  1 ]]
+  then
+    echo "Name exists. You have to choose another one."
+  fi
+  echo
+done
+
+echo "3."
+domain=''
+until [[ $domain != '' ]]
+do
+  read -p "Укажите базовый домен вашего сервера, например, ya.ru: " domain
+
+  if [[ $domain == '' ]]
+  then
+    echo "Domain name should not be an empty string.
+You have to enter something existing."
+  fi
+  echo $domain
+done
 
 until [[ $passwd_ok == 'ok' && $dbrootpassword != '' ]]
 
 do
 
-	echo -ne "\nУкажите пароль для базы данных: "
+	echo -ne "\n4.\nEnter the root password for databases: "
 
 	while IFS= read -p "$prompt" -r -s -n 1 char
 
@@ -113,7 +132,7 @@ do
 
 	prompt=''
 
-	echo -ne "\nВведите пароль еще раз: "
+	echo -ne "\nEnter the password once again: "
 
 	while IFS= read -p "$prompt" -r -s -n 1 char
 
@@ -133,36 +152,35 @@ do
 	done
 
 	if [[ $dbrootpassword == $dbrootpassword1 && $dbrootpassword != '' ]] ; then
-	
-    	echo -e "\nПароль успешно установлен"
-    
+
+    	echo -e "\nThe password successfully set"
+
     	passwd_ok="ok"
-    	
+
 	elif [[ $dbrootpassword == '' ]] ; then
-    	
-    	echo -e "\nПароль не может быть пустым"
-    
+
+    	echo -e "\nThe password can not be empty"
+
     	passwd_ok='ok'
-    
+
     	prompt=''
-    
+
 	else
-    	
-    	echo -e "\nПароль не не совпадает. Введите заново"
-    
+
+    	echo -e "\nThe passwords do not match. Try again"
+
     	ok=''
-    
+
     	prompt=''
-    
+
     	dbrootpassword=''
-    	
+
     	dbrootpassword1=''
-	
-	fi	
+
+	fi
 
 done
 
-#  Установить пароль для студентов
 
 passwd_ok=''
 prompt=''
@@ -171,7 +189,7 @@ until [[ $passwd_ok == 'ok' && $dbuserpassword != '' ]]
 
 do
 
-	echo -ne "\nУкажите студенческий пароль для базы данных: "
+	echo -ne "\n5.\nEnter a common password for user's databases: "
 
 	while IFS= read -p "$prompt" -r -s -n 1 char
 
@@ -192,7 +210,7 @@ do
 
 	prompt=''
 
-	echo -ne "\nВведите студенческий пароль еще раз: "
+	echo -ne "\nEnter user's password once again: "
 
 	while IFS= read -p "$prompt" -r -s -n 1 char
 
@@ -212,191 +230,232 @@ do
 	done
 
 	if [[ $dbuserpassword == $dbuserpassword1 && $dbuserpassword != '' ]] ; then
-	
-    	echo -e "\nПароль для студентов успешно установлен"
-    
+
+    	echo -e "\nThe user's password successfully set"
+
     	passwd_ok="ok"
-    	
+
 	elif [[ $dbuserpassword == '' ]] ; then
-    	
-    	echo -e "\nПароль не может быть пустым"
-    
+
+    	echo -e "\nThe password can not be empty"
+
     	passwd_ok='ok'
-    
+
     	prompt=''
-    
+
 	else
-    	
-    	echo -e "\nПароль не не совпадает. Введите заново"
-    
+
+    	echo -e "\nThe passwords do not match. Try again"
+
     	ok=''
-    
+
     	prompt=''
-    
+
     	dbuserpassword=''
-    	
+
     	dbuserpassword1=''
-	
-	fi	
+
+	fi
 
 done
 
+clear
+
+echo "So... the configuration we have:"
+
+echo -e "\nThe main user at the project:\t\t\t$curuser"
+
+echo -e "\nThe site address for the project:\t\thttps://$domain"
+
+echo -e "\nThe site address for the $curuser:\t\t\thttps://$curuser.$domain"
+
+echo -e "\nOther sites are on\t\t\t\thttps://<username>.$domain"
+
 echo
 
-echo -e "\nБазовый сайт будет располагаться по адресу http://$domain"
+read  -n 1 -s -p "Please press any key to continue or ctrl-c for abort..."
 
-echo -e "\nСтуденческие сайты будут располагаться по адресу http://studentname.$domain"
+clear
 
-sudo apt install apt-transport-https lsb-release ca-certificates wget -y
 
-#sudo wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg 
 
-#sudo sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
+new_wordpress_url="https://ru.wordpress.org/latest-ru_RU.zip"
 
-#sudo apt update
+curhom=`echo $HOME | sed -e 's/\//\\\\\//g'`
 
-sudo apt-get -y install mc lynx man proftpd htop zip unzip ca-certificates apache2 bash-completion whois 
 
-sudo apt-get -y install mariadb-client mariadb-server php php-fpm php-gd php-mysql php-curl php-json libapache2-mod-php
 
-sudo apt-get -y install php-mbstring php-xml memcached php-memcache 
+######################################################################
 
-sudo cp /etc/apache2/conf-available/charset.conf{,.bak}  
+#                          EXECUTING BLOCK
 
-sudo sh -c "sed -e 's/#AddDefaultCharset UTF-8/AddDefaultCharset UTF-8/' /etc/apache2/conf-available/charset.conf > /etc/apache2/conf-available/charset.conf.new" 
+######################################################################
 
-sudo mv /etc/apache2/conf-available/charset.conf{.new,} 
+echo -e "ADDING NEW USER...\n\n"
 
-sudo cp /etc/apache2/sites-available/000-default.conf{,.bak}  
+adduser --gecos "" $curuser
 
-sudo sh -c "sed -e 's/VirtualHost \*:80/VirtualHost $domain:80/' /etc/apache2/sites-available/000-default.conf > /etc/apache2/sites-available/000-default.conf.new" 
+usermod -a -G sudo $curuser
 
-sudo mv /etc/apache2/sites-available/000-default.conf{.new,} 
+cd
 
-sudo a2enmod proxy_fcgi setenvif rewrite
+mkdir -p .wsb2
+
+mkdir -p .wsb2/bin
+
+mkdir -p .wsb2/src
+
+chmod -R 600 .wsb2
+
+apt -y update
+
+apt -y upgrade
+
+apt -y install locales ca-certificates sudo wget ssh
+
+localedef -i ru_RU -f UTF-8 ru_RU.UTF-8
+
+clear
+
+apt install apt-transport-https lsb-release ca-certificates wget -y
+
+exit
+
+apt -y install mc lynx man proftpd htop zip unzip ca-certificates apache2 bash-completion whois
+
+apt -y install mariadb-client mariadb-server php php-fpm php-gd php-mysql php-curl php-json libapache2-mod-php
+
+apt -y install php-mbstring php-xml memcached php-memcache
+
+cp /etc/apache2/conf-available/charset.conf{,.bak}
+
+sh -c "sed -e 's/#AddDefaultCharset UTF-8/AddDefaultCharset UTF-8/' /etc/apache2/conf-available/charset.conf > /etc/apache2/conf-available/charset.conf.new"
+
+mv /etc/apache2/conf-available/charset.conf{.new,}
+
+cp /etc/apache2/sites-available/000-default.conf{,.bak}
+
+sh -c "sed -e 's/VirtualHost \*:80/VirtualHost $domain:80/' /etc/apache2/sites-available/000-default.conf > /etc/apache2/sites-available/000-default.conf.new"
+
+mv /etc/apache2/sites-available/000-default.conf{.new,}
+
+a2enmod proxy_fcgi setenvif rewrite
 
 php_version=`php -i | grep "Loaded Configuration File" | awk -F "=>" '{print $2}' | awk -F "/" '{print $4}'`
 
-sudo a2enmod php$php_version
+a2enmod php$php_version
 
-cd 
+cd ~$mainusername
 
-wget $new_wordpress_url 
+wget $new_wordpress_url
 
-unzip latest-ru_RU.zip 
+unzip latest-ru_RU.zip
 
-rm -f latest-ru_RU.zip 
+rm -f latest-ru_RU.zip
 
 wget https://raw.githubusercontent.com/koo2018/websitebuilding/master/newstudent
 
-wget https://raw.githubusercontent.com/koo2018/websitebuilding/master/delstudent 
+wget https://raw.githubusercontent.com/koo2018/websitebuilding/master/delstudent
 
-wget https://raw.githubusercontent.com/koo2018/websitebuilding/master/tarbkp 
+wget https://raw.githubusercontent.com/koo2018/websitebuilding/master/tarbkp
 
-wget https://raw.githubusercontent.com/koo2018/websitebuilding/master/zipbkp 
+wget https://raw.githubusercontent.com/koo2018/websitebuilding/master/zipbkp
 
 echo "Настраиваем скрипт newstudent"
 
-sudo sh -c "sed -e 's/hname=\"\"/hname=\"$domain\"/' newstudent > newstudent.new" 
+sh -c "sed -e 's/hname=\"\"/hname=\"$domain\"/' newstudent > newstudent.new"
 
-sudo mv newstudent{.new,} 
+mv newstudent{.new,}
 
-sudo sh -c "sed -e 's/rootdbpasswd=\"\"/rootdbpasswd=\"$dbrootpassword\"/' newstudent > newstudent.new" 
+sh -c "sed -e 's/rootdbpasswd=\"\"/rootdbpasswd=\"$dbrootpassword\"/' newstudent > newstudent.new"
 
-sudo mv newstudent{.new,} 
+mv newstudent{.new,}
 
-sudo sh -c "sed -e 's/dbpasswd=\"\"/dbpasswd=\"$dbuserpassword\"/' newstudent > newstudent.new" 
+sh -c "sed -e 's/dbpasswd=\"\"/dbpasswd=\"$dbuserpassword\"/' newstudent > newstudent.new"
 
-sudo mv newstudent{.new,} 
+mv newstudent{.new,}
 
-sudo chown $curuser:$curuser newstudent
+chown $curuser:$curuser newstudent
 
 chmod 700 ./newstudent
 
 echo "Настраиваем скрипт delstudent"
 
-sudo sh -c "sed -e 's/rootdbpasswd=\"\"/rootdbpasswd=\"$dbrootpassword\"/' delstudent > delstudent.new" 
+sh -c "sed -e 's/rootdbpasswd=\"\"/rootdbpasswd=\"$dbrootpassword\"/' delstudent > delstudent.new"
 
-sudo mv delstudent{.new,} 
+mv delstudent{.new,}
 
-sudo chown $curuser:$curuser delstudent
+chown $curuser:$curuser delstudent
 
 chmod 700 ./delstudent
 
 echo "Настраиваем скрипт tarbkp"
 
-sudo sh -c "sed -e 's/TEACHER_NAME=\"\"/TEACHER_NAME=\"$curuser\"/' tarbkp > tarbkp.new" 
+sh -c "sed -e 's/TEACHER_NAME=\"\"/TEACHER_NAME=\"$curuser\"/' tarbkp > tarbkp.new"
 
-sudo mv tarbkp{.new,} 
+mv tarbkp{.new,}
 
-sudo sh -c "sed -e 's/BACKUPS_DIR=\"\"/BACKUPS_DIR=\"$curhom\/backups\"/' tarbkp > tarbkp.new" 
+sh -c "sed -e 's/BACKUPS_DIR=\"\"/BACKUPS_DIR=\"$curhom\/backups\"/' tarbkp > tarbkp.new"
 
-sudo mv tarbkp{.new,} 
+mv tarbkp{.new,}
 
-sudo sh -c "sed -e 's/root -p1234/root -p$dbrootpassword/' tarbkp > tarbkp.new" 
+sh -c "sed -e 's/root -p1234/root -p$dbrootpassword/' tarbkp > tarbkp.new"
 
-sudo mv tarbkp{.new,} 
+mv tarbkp{.new,}
 
 
-sudo chown $curuser:$curuser tarbkp
+chown $curuser:$curuser tarbkp
 
 chmod 700 ./tarbkp
 
 echo "Настраиваем скрипт zipbkp"
 
-sudo sh -c "sed -e 's/TEACHER_NAME=\"\"/TEACHER_NAME=\"$curuser\"/' zipbkp > zipbkp.new" 
+sh -c "sed -e 's/TEACHER_NAME=\"\"/TEACHER_NAME=\"$curuser\"/' zipbkp > zipbkp.new"
 
-sudo mv zipbkp{.new,} 
+mv zipbkp{.new,}
 
-sudo sh -c "sed -e 's/BACKUPS_DIR=\"\"/BACKUPS_DIR=\"$curhom\/backups\"/' zipbkp > zipbkp.new" 
+sh -c "sed -e 's/BACKUPS_DIR=\"\"/BACKUPS_DIR=\"$curhom\/backups\"/' zipbkp > zipbkp.new"
 
-sudo mv zipbkp{.new,} 
+mv zipbkp{.new,}
 
-sudo sh -c "sed -e 's/root -p1234/root -p$dbrootpassword/' zipbkp > zipbkp.new" 
+sh -c "sed -e 's/root -p1234/root -p$dbrootpassword/' zipbkp > zipbkp.new"
 
-sudo mv zipbkp{.new,} 
+mv zipbkp{.new,}
 
-sudo chown $curuser:$curuser zipbkp
+chown $curuser:$curuser zipbkp
 
 chmod 700 ./zipbkp
 
 echo -e "\ny\n$dbrootpassword\n$dbrootpassword\ny\ny\ny\ny" | sudo /usr/bin/mysql_secure_installation
 
-echo -e "use mysql; update user set plugin='' where User='root'; flush privileges;" | sudo mysql 
+echo -e "use mysql; update user set plugin='' where User='root'; flush privileges;" | sudo mysql
 
-sudo cp /etc/ssh/sshd_config{,.bak} 
+cp /etc/ssh/sshd_config{,.bak}
 
-sudo sh -c "sed -e 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config > /etc/ssh/sshd_config.new"
+sh -c "sed -e 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config > /etc/ssh/sshd_config.new"
 
-sudo mv /etc/ssh/sshd_config{.new,} 
+mv /etc/ssh/sshd_config{.new,}
 
-sudo cp  /etc/mysql/mariadb.conf.d/50-server.cnf{,.bak} 
+cp  /etc/mysql/mariadb.conf.d/50-server.cnf{,.bak}
 
-sudo sh -c "sed -e 's/#max_connections/max_connections/' /etc/mysql/mariadb.conf.d/50-server.cnf > /etc/mysql/mariadb.conf.d/50-server.cnf.new"
+sh -c "sed -e 's/#max_connections/max_connections/' /etc/mysql/mariadb.conf.d/50-server.cnf > /etc/mysql/mariadb.conf.d/50-server.cnf.new"
 
-sudo mv /etc/mysql/mariadb.conf.d/50-server.cnf{.new,} 
+mv /etc/mysql/mariadb.conf.d/50-server.cnf{.new,}
 
-sudo sh -c "sed -e 's/max_connections        = 100/max_connections        = 200/' /etc/mysql/mariadb.conf.d/50-server.cnf > /etc/mysql/mariadb.conf.d/50-server.cnf.new" 
+sh -c "sed -e 's/max_connections        = 100/max_connections        = 200/' /etc/mysql/mariadb.conf.d/50-server.cnf > /etc/mysql/mariadb.conf.d/50-server.cnf.new"
 
-sudo mv /etc/mysql/mariadb.conf.d/50-server.cnf{.new,}  
+mv /etc/mysql/mariadb.conf.d/50-server.cnf{.new,}
 
-php_path=`php -i | grep "Loaded Configuration File" | awk -F "=>" '{print $2}'` 
+php_path=`php -i | grep "Loaded Configuration File" | awk -F "=>" '{print $2}'`
 
 php_path=`echo "${php_path/cli/fpm}"`
 
-sudo cp  $php_path{,.bak} 
+cp  $php_path{,.bak}
 
-sudo sh -c "sed -e 's/upload_max_filesize = 2M/upload_max_filesize = 50M/' $php_path > $php_path.new"
+sh -c "sed -e 's/upload_max_filesize = 2M/upload_max_filesize = 50M/' $php_path > $php_path.new"
 
-sudo mv $php_path{.new,}  
+mv $php_path{.new,}
 
-echo -e ' # Generated by NOT /usr/bin/select-editor\nSELECTED_EDITOR="/usr/bin/mcedit"' > .selected_editor 
+echo -e ' # Generated by NOT /usr/bin/select-editor\nSELECTED_EDITOR="/usr/bin/mcedit"' > .selected_editor
 
-echo -e '\n\n EVERYTHING IS DONE. REBOOTING . . . \n\n DO NOT FOREGET TO DROP IN AGAIN \n\n JUST TYPE TWO EXCLAMATION MARKS\n\n !!\n\n' 
-
-touch .websitebuilding
-
-sudo rm -f wsite_install
-
-sudo reboot now 
-
+echo -e '\n\n EVERYTHING IS DONE. REBOOTING . . . \n\n DO NOT FOREGET TO DROP IN AGAIN \n\n JUST TYPE TWO EXCLAMATION MARKS\n\n !!\n\n'
