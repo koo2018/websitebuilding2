@@ -311,43 +311,59 @@ mkdir -p .wsb2/src
 
 chmod -R 600 .wsb2
 
-apt -y update
+apt-get -qq -y update
 
-apt -y upgrade
+apt-get -qq -y upgrade
 
-apt -y install locales ca-certificates sudo wget ssh
+###  MAIN PACKAGES INSTALLATION
+
+apt-get -qq -y install locales
 
 localedef -i ru_RU -f UTF-8 ru_RU.UTF-8
 
-apt install apt-transport-https lsb-release ca-certificates wget -y
+apt-get -qq install lsb-release ca-certificates sudo wget ssh -y
+
+apt-get -qq -y install mc lynx man proftpd htop zip unzip bash-completion whois
+
+apt-get -qq -y install php php-gd php-mysql php-curl php-json php-mbstring php-xml php-opcache
+
+case $webserver in
+  1)
+    echo "Nginx + Apache2"
+    apt-get -y install nginx php-fpm
+
+    ;;
+  2)
+    echo "Apache2"
+    apt-get -qq -y install apache2 libapache2-mod-php
+
+    cp /etc/apache2/conf-available/charset.conf{,.bak}
+
+    sh -c "sed -e 's/#AddDefaultCharset UTF-8/AddDefaultCharset UTF-8/' /etc/apache2/conf-available/charset.conf > /etc/apache2/conf-available/charset.conf.new"
+
+    mv /etc/apache2/conf-available/charset.conf{.new,}
+
+    cp /etc/apache2/sites-available/000-default.conf{,.bak}
+
+    sh -c "sed -e 's/VirtualHost \*:80/VirtualHost $domain:80/' /etc/apache2/sites-available/000-default.conf > /etc/apache2/sites-available/000-default.conf.new"
+
+    mv /etc/apache2/sites-available/000-default.conf{.new,}
+
+    a2enmod proxy_fcgi setenvif rewrite
+
+    php_version=`php -i | grep "Loaded Configuration File" | awk -F "=>" '{print $2}' | awk -F "/" '{print $4}'`
+
+    a2enmod php$php_version
+    ;;
+esac
 
 exit
 
-apt -y install mc lynx man proftpd htop zip unzip ca-certificates apache2 bash-completion whois
+apt-get -qq -y install mariadb-client mariadb-server
 
-apt -y install mariadb-client mariadb-server php php-fpm php-gd php-mysql php-curl php-json libapache2-mod-php
+apt-get -qq -y install  memcached php-memcache
 
-apt -y install php-mbstring php-xml memcached php-memcache
-
-cp /etc/apache2/conf-available/charset.conf{,.bak}
-
-sh -c "sed -e 's/#AddDefaultCharset UTF-8/AddDefaultCharset UTF-8/' /etc/apache2/conf-available/charset.conf > /etc/apache2/conf-available/charset.conf.new"
-
-mv /etc/apache2/conf-available/charset.conf{.new,}
-
-cp /etc/apache2/sites-available/000-default.conf{,.bak}
-
-sh -c "sed -e 's/VirtualHost \*:80/VirtualHost $domain:80/' /etc/apache2/sites-available/000-default.conf > /etc/apache2/sites-available/000-default.conf.new"
-
-mv /etc/apache2/sites-available/000-default.conf{.new,}
-
-a2enmod proxy_fcgi setenvif rewrite
-
-php_version=`php -i | grep "Loaded Configuration File" | awk -F "=>" '{print $2}' | awk -F "/" '{print $4}'`
-
-a2enmod php$php_version
-
-cd ~$mainusername
+cd ~$curuser
 
 wget $new_wordpress_url
 
