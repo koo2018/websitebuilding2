@@ -283,9 +283,6 @@ new_wordpress_url="https://ru.wordpress.org/latest-ru_RU.zip"
 
 curhom=`echo $HOME | sed -e 's/\//\\\\\//g'`
 
-php_version=`php -i | grep "Loaded Configuration File" | awk -F "=>" '{print $2}' | awk -F "/" '{print $4}'`
-
-
 
 
 ######################################################################
@@ -306,19 +303,27 @@ echo -e "STARTING SOFTWARE PACKAGES INSTALLATION. IT TAKES SOME TIME...\n"
 
 cd
 
-mkdir -p `eval echo ~$curuser/.wsb2`
+curuser_home=`eval echo ~$curuser`
 
-mkdir -p `eval echo ~$curuser/.wsb2/bin`
+mkdir -p $curuser_home/.wsb2
 
-mkdir -p `eval echo ~$curuser/.wsb2/src`
+mkdir -p $curuser_home/.wsb2/bin
 
-mkdir -p `eval echo ~$curuser/.wsb2/www/main`
+mkdir -p $curuser_home/.wsb2/src
 
-mkdir -p `eval echo ~$curuser/.wsb2/www/teacher`
+mkdir -p $curuser_home/.wsb2/www
 
-chown -R  $curuser:$curuser `eval echo ~$curuser/.wsb2`
+echo -e "<?php\nphpinfo();\n?>\n" > $curuser_home/.wsb2/www/phpinfo.php
 
-chmod -R 660 `eval echo ~$curuser/.wsb2`
+echo -e "<h1>$curuser'S SITE</h1>" > $curuser_home/.wsb2/www/index.php
+
+chown -R  $curuser:www-data $curuser_home/.wsb2
+
+chmod -R 650 $curuser_home/.wsb2
+
+chmod 640 $curuser_home/.wsb2/www/*
+
+chmod 600 $curuser_home/.wsb2/bin
 
 apt-get -qq -y update
 
@@ -342,9 +347,11 @@ case $webserver in
 
     apt-get -y install nginx php-fpm
 
+    php_version=`php -i | grep "Loaded Configuration File" | awk -F "=>" '{print $2}' | awk -F "/" '{print $4}'`
+
     echo -e "<?php\nphpinfo();\n?>\n" > /var/www/html/phpinfo.php
 
-    echo -e "<h1>DEFAUT SITE</h1>" > /var/www/html/index.php
+    echo -e "<h1>DEFAULT SITE</h1>" > /var/www/html/index.php
 
     rm -f /etc/nginx/sites-available/default
 
@@ -363,12 +370,31 @@ case $webserver in
 	location ~ \.php$ {
 		include fastcgi.conf;
 		try_files \$uri \$uri/ =404;
-    		fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+    fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
 	}
 
 }" > /etc/nginx/sites-available/default
 
+echo "server {
+listen 80;
+listen [::]:80;
+
+root $curuser_home/.wsb2/www/;
+
+index index.php index.html index.htm;
+
+server_name $curuser.$domain;
+
+location ~ \.php$ {
+include fastcgi.conf;
+try_files \$uri \$uri/ =404;
+fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+}
+
+}" > /etc/nginx/sites-available/$curuser.conf
+
     ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
+    ln -s /etc/nginx/sites-available/$curuser.conf /etc/nginx/sites-enabled/
 
     systemctl restart nginx
 
@@ -378,6 +404,9 @@ case $webserver in
   2)
     echo "Apache2"
     apt-get -qq -y install apache2 libapache2-mod-php
+
+    php_version=`php -i | grep "Loaded Configuration File" | awk -F "=>" '{print $2}' | awk -F "/" '{print $4}'`
+
 
     cp /etc/apache2/conf-available/charset.conf{,.bak}
 
@@ -398,13 +427,11 @@ case $webserver in
     ;;
 esac
 
-exit
-
 apt-get -qq -y install mariadb-client mariadb-server
 
 apt-get -qq -y install  memcached php-memcache
 
-cd ~$curuser
+cd $curuser_home
 
 wget $new_wordpress_url
 
@@ -412,15 +439,17 @@ unzip latest-ru_RU.zip
 
 rm -f latest-ru_RU.zip
 
-wget https://raw.githubusercontent.com/koo2018/websitebuilding/master/newstudent
+wget -P $curuser_home/.wbs/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/master/wsb2-newstudent.sh
 
-wget https://raw.githubusercontent.com/koo2018/websitebuilding/master/delstudent
+wget -P $curuser_home/.wbs/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding/master/wsb2-delstudent.sh
 
-wget https://raw.githubusercontent.com/koo2018/websitebuilding/master/tarbkp
+wget -P $curuser_home/.wbs/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding/master/wsb2-tarbkp.sh
 
-wget https://raw.githubusercontent.com/koo2018/websitebuilding/master/zipbkp
+wget -P $curuser_home/.wbs/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding/master/wsb2-zipbkp.sh
 
 echo "Настраиваем скрипт newstudent"
+
+exit
 
 sh -c "sed -e 's/hname=\"\"/hname=\"$domain\"/' newstudent > newstudent.new"
 
