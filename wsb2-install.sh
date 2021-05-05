@@ -319,11 +319,11 @@ echo -e "<h1>$curuser'S SITE</h1>" > $curuser_home/.wsb2/www/index.php
 
 chown -R  $curuser:www-data $curuser_home/.wsb2
 
-chmod -R 650 $curuser_home/.wsb2
+chmod -R 750 $curuser_home/.wsb2
 
 chmod 640 $curuser_home/.wsb2/www/*
 
-chmod 600 $curuser_home/.wsb2/bin
+chmod 700 $curuser_home/.wsb2/bin
 
 apt-get -qq -y update
 
@@ -433,19 +433,25 @@ apt-get -qq -y install  memcached php-memcache
 
 cd $curuser_home
 
-wget $new_wordpress_url
+#wget $new_wordpress_url
 
-unzip latest-ru_RU.zip
+#unzip latest-ru_RU.zip
 
-rm -f latest-ru_RU.zip
+#rm -f latest-ru_RU.zip
 
-wget -P $curuser_home/.wbs/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/master/wsb2-newstudent.sh
+wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/master/wsb2-newstudent.sh
 
-wget -P $curuser_home/.wbs/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding/master/wsb2-delstudent.sh
+wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding/master/wsb2-delstudent.sh
 
-wget -P $curuser_home/.wbs/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding/master/wsb2-tarbkp.sh
+wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding/master/wsb2-tarbkp.sh
 
-wget -P $curuser_home/.wbs/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding/master/wsb2-zipbkp.sh
+wget -P $curuser_home/.wbs2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding/master/wsb2-zipbkp.sh
+
+chown -R $curuser:$curuser $curuser_home/.wsb2/bin/*
+
+chmod u+x $curuser_home/.wsb2/bin/*
+
+echo -e "\nPATH=\$PATH:$curuser_home/.wsb2/bin\n" >> $curuser_home/.bashrc
 
 echo "Настраиваем скрипт newstudent"
 
