@@ -283,6 +283,9 @@ new_wordpress_url="https://ru.wordpress.org/latest-ru_RU.zip"
 
 curhom=`echo $HOME | sed -e 's/\//\\\\\//g'`
 
+php_version=`php -i | grep "Loaded Configuration File" | awk -F "=>" '{print $2}' | awk -F "/" '{print $4}'`
+
+
 
 
 ######################################################################
@@ -317,8 +320,6 @@ chown -R  $curuser:$curuser `eval echo ~$curuser/.wsb2`
 
 chmod -R 660 `eval echo ~$curuser/.wsb2`
 
-exit
-
 apt-get -qq -y update
 
 apt-get -qq -y upgrade
@@ -329,7 +330,7 @@ apt-get -qq -y install locales
 
 localedef -i ru_RU -f UTF-8 ru_RU.UTF-8
 
-apt-get -qq -y install lsb-release ca-certificates sudo wget ssh
+apt-get -qq -y install sudo ssh
 
 apt-get -qq -y install mc lynx man proftpd htop zip unzip bash-completion whois
 
@@ -338,8 +339,40 @@ apt-get -qq -y install php-gd php-mysql php-curl php-json php-mbstring php-xml p
 case $webserver in
   1)
     echo "Nginx + Apache2"
-    
+
     apt-get -y install nginx php-fpm
+
+    echo -e "<?php\nphpinfo();\n?>\n" > /var/www/html/phpinfo.php
+
+    echo -e "<h1>DEFAUT SITE</h1>" > /var/www/html/index.php
+
+    rm -f /etc/nginx/sites-available/default
+
+    rm -f /etc/nginx/sites-enabled/default
+
+    echo "server {
+	listen 80 default_server;
+	listen [::]:80 default_server;
+
+	root /var/www/html;
+
+	index index.php index.html index.htm;
+
+	server_name _;
+
+	location ~ \.php$ {
+		include fastcgi.conf;
+		try_files \$uri \$uri/ =404;
+    		fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+	}
+
+}" > /etc/nginx/sites-available/default
+
+    ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
+
+    systemctl restart nginx
+
+    systemctl start php$php_version-fpm
 
     ;;
   2)
@@ -360,7 +393,6 @@ case $webserver in
 
     a2enmod proxy_fcgi setenvif rewrite
 
-    php_version=`php -i | grep "Loaded Configuration File" | awk -F "=>" '{print $2}' | awk -F "/" '{print $4}'`
 
     a2enmod php$php_version
     ;;
