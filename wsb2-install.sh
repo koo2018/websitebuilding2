@@ -455,33 +455,27 @@ echo -e "\nPATH=\$PATH:$curuser_home/.wsb2/bin\n" >> $curuser_home/.bashrc
 
 echo "Настраиваем скрипт newstudent"
 
-exit
+cd $curuser_home/.wsb2/bin
 
-sh -c "sed -e 's/hname=\"\"/hname=\"$domain\"/' newstudent > newstudent.new"
+sh -c "sed -e 's/hname=\"\"/hname=\"$domain\"/' wsb2-newstudent.sh > wsb2-newstudent.new"
 
-mv newstudent{.new,}
+echo `pwd`
 
-sh -c "sed -e 's/rootdbpasswd=\"\"/rootdbpasswd=\"$dbrootpassword\"/' newstudent > newstudent.new"
+mv wsb2-newstudent{.new,.sh}
 
-mv newstudent{.new,}
+sh -c "sed -e 's/rootdbpasswd=\"\"/rootdbpasswd=\"$dbrootpassword\"/' wsb2-newstudent.sh > wsb2-newstudent.new"
 
-sh -c "sed -e 's/dbpasswd=\"\"/dbpasswd=\"$dbuserpassword\"/' newstudent > newstudent.new"
+mv wsb2-newstudent{.new,.sh}
 
-mv newstudent{.new,}
+sh -c "sed -e 's/dbpasswd=\"\"/dbpasswd=\"$dbuserpassword\"/' wsb2-newstudent.sh > wsb2-newstudent.new"
 
-chown $curuser:$curuser newstudent
-
-chmod 700 ./newstudent
+mv wsb2-newstudent{.new,.sh}
 
 echo "Настраиваем скрипт delstudent"
 
-sh -c "sed -e 's/rootdbpasswd=\"\"/rootdbpasswd=\"$dbrootpassword\"/' delstudent > delstudent.new"
+sh -c "sed -e 's/rootdbpasswd=\"\"/rootdbpasswd=\"$dbrootpassword\"/' wsb2-delstudent.sh > wsb2-delstudent.new"
 
-mv delstudent{.new,}
-
-chown $curuser:$curuser delstudent
-
-chmod 700 ./delstudent
+mv wsb2-delstudent{.new,.sh}
 
 echo "Настраиваем скрипт tarbkp"
 
@@ -516,9 +510,11 @@ sh -c "sed -e 's/root -p1234/root -p$dbrootpassword/' zipbkp > zipbkp.new"
 
 mv zipbkp{.new,}
 
-chown $curuser:$curuser zipbkp
+chown $curuser:$curuser *
 
-chmod 700 ./zipbkp
+chmod 700 *
+
+exit
 
 echo -e "\ny\n$dbrootpassword\n$dbrootpassword\ny\ny\ny\ny" | sudo /usr/bin/mysql_secure_installation
 
