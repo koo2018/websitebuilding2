@@ -345,7 +345,7 @@ case $webserver in
   1)
     echo "Nginx + Apache2"
 
-    apt-get -y install nginx php-fpm
+    apt-get -qq -y install nginx php-fpm
 
     php_version=`php -i | grep "Loaded Configuration File" | awk -F "=>" '{print $2}' | awk -F "/" '{print $4}'`
 
