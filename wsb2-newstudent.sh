@@ -5,32 +5,32 @@
 #
 
 # ваш домен
-hname=""
+hname="bmd2019.ru"
 
 # пароль администратора базы данных. Мы его задавали, когда устнанавливали MariaDB/MySQL
-rootdbpasswd=""
+rootdbpasswd="koo1975"
 
-# пароль, который мы установим студентам на доступ к базе данных. 
+# пароль, который мы установим студентам на доступ к базе данных.
 # Его надо сейчас придуамть, запомнить и сообщить студентам, когда они будут установливать WordPRess
-dbpasswd=""
+dbpasswd="1234"
 
-webserver=""
+webserver="1"
 
 # Дальше править не нужно, если вы не понимаете, что делаете
 
 
 
-if [ "$hname" = "" ]; then 
+if [ "$hname" = "" ]; then
 echo -e "Не указано доменное имя в переменной \$hname. \n"
 stop_var=1
 fi
 
-if [ "$rootdbpasswd" = "" ]; then 
+if [ "$rootdbpasswd" = "" ]; then
 echo -e "Не указан пароль администратора базы данных \$rootdbpasswd. \n"
 stop_var=1
 fi
 
-if [ "$dbpasswd" = "" ]; then 
+if [ "$dbpasswd" = "" ]; then
 echo -e "Не указан пароль пользователя базы данных \$dbpasswd. \n"
 stop_var=1
 fi
@@ -42,27 +42,25 @@ echo -e 'Для работы программы требуется два пар
 stop_var=1
 fi
 
-if [ $stop_var ]; then 
+if [ $stop_var ]; then
 echo -e "Скрипт остановлен \n"
-exit 
+exit
 fi
 
-apache_vhosts="/etc/apache2/sites-available"
 group_home="/home/$1"
 www="/home/$1/$2/www"
 wordpress="/home/$1/$2/www/wordpress"
 
+sudo -v
 
 grp=`grep "^$1:" /etc/group`
 if [[ $grp == '' ]]; then
 echo 'Создаем группу '$2
 sudo addgroup $1
 else
-echo 'Группа '$1' уже существует' 
+echo 'Группа '$1' уже существует'
 fi
 echo ''
-
-
 
 echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 echo "*"
@@ -85,7 +83,7 @@ echo 'Создаем пользователя '$2
 sudo useradd -b /home/$1 -g $1 -m -s /bin/bash $2
 else
 echo 'Пользователь '$2' уже существует'
-exit 
+exit
 fi
 echo ''
 
@@ -117,41 +115,9 @@ echo -e "Устанавливаем пароль для "$2"\n"
 
 echo -e "$dbpasswd\n$dbpasswd\n" | sudo passwd $2
 
-echo -e "\nФАЙЛ ДЛЯ АПАЧА\n"
-echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
-echo ""
-
-sudo echo "<VirtualHost $2.$hname:80>
-
-DocumentRoot /home/$1/$2/www
-
-<Directory /home/$1/$2/www>
-        Options Indexes FollowSymLinks
-        AllowOverride All
-        Require all granted
-</Directory>
-ErrorLog ${APACHE_LOG_DIR}/error.log
-    CustomLog ${APACHE_LOG_DIR}/access.log combined
-</VirtualHost>
-" | sudo tee $apache_vhosts/$2.conf
-
-echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
-echo ""
-
-
-
-echo -n "Включение сайта "$1" на сервере apache2...  "
-sudo a2ensite -q $2
-echo ''
-
-echo -n "Перезапуск apache2...  "
-sudo systemctl reload apache2
-echo "Завершено"
-echo ""
-
 echo -n "Копируем папку WordPress...  "
 
-sudo cp -r ./wordpress/* /home/$1/$2/www/wordpress
+sudo cp -r /home/teacher/.wsb2/wordpress/* /home/$1/$2/www/wordpress
 
 echo -e "Завершили\n"
 
@@ -181,6 +147,81 @@ FLUSH PRIVILEGES;
 EOF
 echo "Завершено"
 echo ""
+
+
+
+
+case $webserver in
+      1)
+
+      sudo echo "server {
+      listen 80;
+      listen [::]:80;
+
+      root /home/$1/$2/www/;
+
+      index index.php index.html index.htm;
+
+      server_name $2.$hname;
+
+      location ~ \.php$ {
+      include fastcgi.conf;
+      try_files \$uri \$uri/ =404;
+      fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+      }
+
+    }" > /etc/nginx/sites-available/$2.$hname.conf
+
+      sudo ln -s /etc/nginx/sites-available/$2.$hname.conf /etc/nginx/sites-enabled/
+
+      sudo systemctl restart nginx
+      ;;
+
+      2)
+
+      apache_vhosts="/etc/apache2/sites-available"
+
+
+
+
+      echo -e "\nФАЙЛ ДЛЯ АПАЧА\n"
+      echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
+      echo ""
+
+      sudo echo "<VirtualHost $2.$hname:80>
+
+      DocumentRoot /home/$1/$2/www
+
+      <Directory /home/$1/$2/www>
+              Options Indexes FollowSymLinks
+              AllowOverride All
+              Require all granted
+      </Directory>
+      ErrorLog ${APACHE_LOG_DIR}/error.log
+          CustomLog ${APACHE_LOG_DIR}/access.log combined
+      </VirtualHost>
+      " | sudo tee $apache_vhosts/$2.conf
+
+      echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
+      echo ""
+
+
+
+      echo -n "Включение сайта "$1" на сервере apache2...  "
+      sudo a2ensite -q $2
+      echo ''
+
+      echo -n "Перезапуск apache2...  "
+      sudo systemctl reload apache2
+      echo "Завершено"
+      echo ""
+
+
+
+
+;;
+
+esac
 
 echo "Создание аккаунта пользователя "$2" завершено!"
 echo -e "\n"
