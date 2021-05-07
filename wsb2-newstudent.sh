@@ -168,6 +168,7 @@ case $webserver in
       include fastcgi.conf;
       try_files \$uri \$uri/ =404;
       fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+      
       }
 
     }\" > /etc/nginx/sites-available/$2.conf"
