@@ -481,6 +481,10 @@ sh -c "sed -e 's/dbpasswd=\"\"/dbpasswd=\"$dbuserpassword\"/' wsb2-newstudent.sh
 
 mv wsb2-newstudent{.new,.sh}
 
+sh -c "sed -e 's/dbpasswd=\"\"/webserver=\"$webserver\"/' wsb2-newstudent.sh > wsb2-newstudent.new"
+
+mv wsb2-newstudent{.new,.sh}
+
 echo "Настраиваем скрипт delstudent"
 
 sh -c "sed -e 's/rootdbpasswd=\"\"/rootdbpasswd=\"$dbrootpassword\"/' wsb2-delstudent.sh > wsb2-delstudent.new"
