@@ -154,7 +154,7 @@ echo ""
 case $webserver in
       1)
 
-      sudo echo "server {
+      sudo sh -c "echo \"server {
       listen 80;
       listen [::]:80;
 
@@ -170,9 +170,9 @@ case $webserver in
       fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
       }
 
-    }" > /etc/nginx/sites-available/$2.$hname.conf
+    }\" > /etc/nginx/sites-available/$2.conf"
 
-      sudo ln -s /etc/nginx/sites-available/$2.$hname.conf /etc/nginx/sites-enabled/
+      sudo ln -s /etc/nginx/sites-available/$2.conf /etc/nginx/sites-enabled/
 
       sudo systemctl restart nginx
       ;;
