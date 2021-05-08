@@ -5,13 +5,13 @@
 #
 
 # пароль администратора базы данных
-rootdbpasswd=""
+rootdbpasswd="koo1975"
+
+webserver="1"
 
 # Дальше править не нужно, если вы не понимаете, что делаете
 
-apache_vhosts="/etc/apache2/sites-available"
-
-if [ "$rootdbpasswd" = "" ]; then 
+if [ "$rootdbpasswd" = "" ]; then
 echo -e "Не указан пароль администратора базы данных \$rootdbpasswd. \n"
 stop_var=1
 fi
@@ -33,12 +33,46 @@ echo -e 'Пользователя '$1' не существует\n'
 stop_var=1
 fi
 
-if [ $stop_var ]; then 
+if [ $stop_var ]; then
 echo -e "Скрипт остановлен \n"
-exit 
+exit
 fi
 
-clear
+case $webserver in
+      1)
+
+        sudo rm -f /etc/nginx/sites-available/$1.conf
+
+        sudo rm -f /etc/nginx/sites-enabled/$1.conf
+
+        sudo systemctl reload nginx
+
+
+      ;;
+
+      2)
+
+        apache_vhosts="/etc/apache2/sites-available"
+
+        echo -n "Выключение сайта "$1" на сервере apache2...  "
+        sudo a2dissite -q $1
+        echo ""
+
+        echo -n "Удаление конфигурации "$1".conf на сервере apache2...  "
+        sudo rm -f $apache_vhosts"/"$1.conf
+        echo "Завершено"
+        echo ""
+
+
+        echo -n "Перезапуск apache2...  "
+        sudo systemctl reload apache2
+        echo "Завершено"
+        echo ""
+
+
+      ;;
+  esac
+
 
 echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 echo "*"
@@ -49,20 +83,6 @@ echo ""
 
 echo -n "Удаление пользователя "$1"...  "
 sudo deluser  --remove-home $1
-echo "Завершено"
-echo ""
-
-echo -n "Выключение сайта "$1" на сервере apache2...  "
-sudo a2dissite -q $1
-echo ""
-
-echo -n "Удаление конфигурации "$1".conf на сервере apache2...  "
-sudo rm -f $apache_vhosts"/"$1.conf
-echo "Завершено"
-echo ""
-
-echo -n "Перезапуск apache2...  "
-sudo systemctl reload apache2
 echo "Завершено"
 echo ""
 
