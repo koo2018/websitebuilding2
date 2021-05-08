@@ -14,7 +14,7 @@ rootdbpasswd="koo1975"
 # Его надо сейчас придуамть, запомнить и сообщить студентам, когда они будут установливать WordPRess
 dbpasswd="1234"
 
-webserver=""
+webserver="1"
 
 # Дальше править не нужно, если вы не понимаете, что делаете
 
@@ -148,7 +148,11 @@ EOF
 echo "Завершено"
 echo ""
 
+sudo mkdir /home/$1/$2/.log
 
+sudo chown $2:www-data /home/$1/$2/.log
+
+sudo chmod g+w /home/$1/$2/.log
 
 
 case $webserver in
@@ -167,9 +171,17 @@ case $webserver in
       location ~ \.php$ {
       include fastcgi.conf;
       try_files \\\$uri \\\$uri/ =404;
+      fastcgi_index index.php;
       fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
-      
+
       }
+
+      location / {
+try_files \\\$uri \\\$uri/ /wordpress/index.php?q=\\\$uri\\\$args;
+}
+
+error_log /home/$1/$2/.log/error.log;
+access_log /home/$1/$2/.log/access.log;
 
     }\" > /etc/nginx/sites-available/$2.conf"
 
