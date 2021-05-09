@@ -307,6 +307,8 @@ curuser_home=`eval echo ~$curuser`
 
 mkdir -p $curuser_home/.wsb2
 
+mkdir -p $curuser_home/.log
+
 mkdir -p $curuser_home/.wsb2/bin
 
 mkdir -p $curuser_home/.wsb2/src
@@ -319,7 +321,11 @@ echo -e "<h1>$curuser'S SITE</h1>" > $curuser_home/.wsb2/www/index.php
 
 chown -R  $curuser:www-data $curuser_home/.wsb2
 
+chown -R  $curuser:www-data $curuser_home/.log
+
 chmod -R 750 $curuser_home/.wsb2
+
+chmod -R 750 $curuser_home/.log
 
 chmod 640 $curuser_home/.wsb2/www/*
 
@@ -383,6 +389,9 @@ case $webserver in
     fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
 	}
 
+  error_log /home/$curuser_home/$curuser/.log/$domain-error.log;
+  access_log /home/$curuser_home/$curuser/.log/$domain-access.log;
+
 }" > /etc/nginx/sites-available/default
 
 echo "server {
@@ -400,6 +409,9 @@ include fastcgi.conf;
 try_files \$uri \$uri/ =404;
 fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
 }
+
+error_log /home/$curuser_home/$curuser/.log/error.log;
+access_log /home/$curuser_home/$curuser/.log/access.log;
 
 }" > /etc/nginx/sites-available/$curuser.conf
 
