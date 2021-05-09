@@ -410,8 +410,8 @@ try_files \$uri \$uri/ =404;
 fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
 }
 
-error_log $curuser_home/.log/error.log;
-access_log $curuser_home/.log/access.log;
+error_log $curuser_home/.log/$curuser-error.log;
+access_log $curuser_home/.log/$curuser-access.log;
 
 }" > /etc/nginx/sites-available/$curuser.conf
 
