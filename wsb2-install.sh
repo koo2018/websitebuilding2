@@ -315,10 +315,6 @@ mkdir -p $curuser_home/.wsb2/src
 
 mkdir -p $curuser_home/.wsb2/www
 
-echo -e "<?php\nphpinfo();\n?>\n" > $curuser_home/.wsb2/www/phpinfo.php
-
-echo -e "<h1>$curuser'S SITE</h1>" > $curuser_home/.wsb2/www/index.php
-
 chown -R  $curuser:www-data $curuser_home/.wsb2
 
 chown -R  $curuser:www-data $curuser_home/.log
@@ -441,16 +437,30 @@ access_log $curuser_home/.log/$curuser-access.log;
 
     mv /etc/apache2/sites-available/000-default.conf{.new,}
 
+    echo "<VirtualHost $domain:80>
+
+    DocumentRoot /var/www/html
+
+    <Directory /var/www/html>
+            Options Indexes FollowSymLinks
+            AllowOverride All
+            Require all granted
+    </Directory>
+    ErrorLog $curuser_home/.log/$domain-error.log
+        CustomLog $curuser_home/.log/$domain-access.log combined
+    </VirtualHost>
+    " > /etc/apache2/sites-available/000-default.conf
+
     a2enmod proxy_fcgi setenvif rewrite
 
 
     a2enmod php$php_version
 
-    sudo echo "<VirtualHost $curuser.$domain:80>
+    echo "<VirtualHost $curuser.$domain:80>
 
-    DocumentRoot /home/$curuser/www
+    DocumentRoot /home/$curuser/.wsb2/www
 
-    <Directory /home/$curuser/www>
+    <Directory /home/$curuser/.wsb2/www>
             Options Indexes FollowSymLinks
             AllowOverride All
             Require all granted
@@ -461,6 +471,8 @@ access_log $curuser_home/.log/$curuser-access.log;
     " > /etc/apache2/sites-available/$curuser.conf
 
     a2ensite $curuser
+
+    systemctl reload apache2
     ;;
 esac
 
@@ -468,8 +480,9 @@ echo -e "<?php\nphpinfo();\n?>\n" > /var/www/html/phpinfo.php
 
 echo -e "<h1>DEFAULT SITE</h1>" > /var/www/html/index.php
 
+echo -e "<?php\nphpinfo();\n?>\n" > $curuser_home/.wsb2/www/phpinfo.php
 
-exit
+echo -e "<h1>$curuser'S SITE</h1>" > $curuser_home/.wsb2/www/index.php
 
 apt-get -qq -y install mariadb-client mariadb-server
 
