@@ -347,9 +347,6 @@ apt-get -qq -y install mc lynx man proftpd htop zip unzip bash-completion whois
 
 apt-get -qq -y install php-gd php-mysql php-curl php-json php-mbstring php-xml php-opcache
 
-echo -e "<?php\nphpinfo();\n?>\n" > /var/www/html/phpinfo.php
-
-echo -e "<h1>DEFAULT SITE</h1>" > /var/www/html/index.php
 
 case $webserver in
   1)
@@ -448,8 +445,29 @@ access_log $curuser_home/.log/$curuser-access.log;
 
 
     a2enmod php$php_version
+
+    sudo echo "<VirtualHost $curuser.$domain:80>
+
+    DocumentRoot /home/$curuser/www
+
+    <Directory /home/$curuser/www>
+            Options Indexes FollowSymLinks
+            AllowOverride All
+            Require all granted
+    </Directory>
+    ErrorLog $curuser_home/.log/$curuser-error.log
+        CustomLog $curuser_home/.log/$curuser-access.log combined
+    </VirtualHost>
+    " > /etc/apache2/sites-available/$curuser.conf
+
+    a2ensite $curuser
     ;;
 esac
+
+echo -e "<?php\nphpinfo();\n?>\n" > /var/www/html/phpinfo.php
+
+echo -e "<h1>DEFAULT SITE</h1>" > /var/www/html/index.php
+
 
 exit
 
