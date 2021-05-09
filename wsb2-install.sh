@@ -347,6 +347,10 @@ apt-get -qq -y install mc lynx man proftpd htop zip unzip bash-completion whois
 
 apt-get -qq -y install php-gd php-mysql php-curl php-json php-mbstring php-xml php-opcache
 
+echo -e "<?php\nphpinfo();\n?>\n" > /var/www/html/phpinfo.php
+
+echo -e "<h1>DEFAULT SITE</h1>" > /var/www/html/index.php
+
 case $webserver in
   1)
     echo "Nginx + Apache2"
@@ -365,9 +369,7 @@ case $webserver in
 
     mv $php_path{.new,}
 
-    echo -e "<?php\nphpinfo();\n?>\n" > /var/www/html/phpinfo.php
 
-    echo -e "<h1>DEFAULT SITE</h1>" > /var/www/html/index.php
 
     rm -f /etc/nginx/sites-available/default
 
@@ -448,6 +450,8 @@ access_log $curuser_home/.log/$curuser-access.log;
     a2enmod php$php_version
     ;;
 esac
+
+exit
 
 apt-get -qq -y install mariadb-client mariadb-server
 
