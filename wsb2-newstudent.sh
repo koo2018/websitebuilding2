@@ -7,7 +7,7 @@ rootdbpasswd="koo1975"
 
 dbpasswd="1234"
 
-webserver="1"
+webserver=""
 
 
 if [ "$hname" = "" ]; then
