@@ -62,7 +62,7 @@ done
 
 echo "2.
 Now you have to choose a webserver:
-1. Nginx + Apache2
+1. Nginx
 2. Apache2
 "
 until [[ $webserver == '1' || $webserver == '2' ]]
