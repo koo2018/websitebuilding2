@@ -389,8 +389,8 @@ case $webserver in
     fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
 	}
 
-  error_log /home/$curuser_home/$curuser/.log/$domain-error.log;
-  access_log /home/$curuser_home/$curuser/.log/$domain-access.log;
+  error_log $curuser_home/.log/$domain-error.log;
+  access_log $curuser_home/.log/$domain-access.log;
 
 }" > /etc/nginx/sites-available/default
 
@@ -410,8 +410,8 @@ try_files \$uri \$uri/ =404;
 fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
 }
 
-error_log /home/$curuser_home/$curuser/.log/error.log;
-access_log /home/$curuser_home/$curuser/.log/access.log;
+error_log $curuser_home/.log/error.log;
+access_log $curuser_home/.log/access.log;
 
 }" > /etc/nginx/sites-available/$curuser.conf
 
