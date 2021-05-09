@@ -1,11 +1,11 @@
 #!/bin/bash
 
 
-hname="bmd2019.ru"
+hname=""
 
-rootdbpasswd="koo1975"
+rootdbpasswd=""
 
-dbpasswd="1234"
+dbpasswd=""
 
 webserver=""
 
