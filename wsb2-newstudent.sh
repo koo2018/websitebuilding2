@@ -1,23 +1,13 @@
 #!/bin/bash
 
-#####
-# Здесь можно менять параметры (пробелы вокруг знака равно будут ошибкой)
-#
 
-# ваш домен
 hname="bmd2019.ru"
 
-# пароль администратора базы данных. Мы его задавали, когда устнанавливали MariaDB/MySQL
 rootdbpasswd="koo1975"
 
-# пароль, который мы установим студентам на доступ к базе данных.
-# Его надо сейчас придуамть, запомнить и сообщить студентам, когда они будут установливать WordPRess
 dbpasswd="1234"
 
 webserver="1"
-
-# Дальше править не нужно, если вы не понимаете, что делаете
-
 
 
 if [ "$hname" = "" ]; then
@@ -154,34 +144,51 @@ sudo chown $2:www-data /home/$1/$2/.log
 
 sudo chmod g+w /home/$1/$2/.log
 
+sudo sh -c "echo \"<?php phpinfo(); ?>\" > /home/$1/$2/www/phpinfo.php"
 
 case $webserver in
       1)
 
       sudo sh -c "echo \"server {
-      listen 80;
-      listen [::]:80;
+        listen 80;
+        listen [::]:80;
 
-      root /home/$1/$2/www/;
+        root /home/$1/$2/www/;
 
-      index index.php index.html index.htm;
+        index index.php index.html index.htm;
 
-      server_name $2.$hname;
+        server_name $2.$hname;
 
-      location ~ \.php$ {
-      include fastcgi.conf;
-      try_files \\\$uri \\\$uri/ =404;
-      fastcgi_index index.php;
-      fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+        location ~* ^.+.(xml|ogg|ogv|svg|svgz|eot|otf|woff|mp4|ttf|css|rss|atom|js|jpg|jpeg|gif|png|ico|zip|tgz|gz|rar|bz2|doc|xls|exe|ppt|tar|mid|midi|wav|bmp|rtf)$ {
+          expires max;
+        }
 
-      }
+        location = /favicon.ico {
+          log_not_found off;
+          access_log off;
+        }
 
-      location / {
-try_files \\\$uri \\\$uri/ /wordpress/index.php?q=\\\$uri\\\$args;
-}
+        location = /robots.txt {
+          allow all;
+          log_not_found off;
+          access_log off;
+        }
 
-error_log /home/$1/$2/.log/error.log;
-access_log /home/$1/$2/.log/access.log;
+        location ~ \.php$ {
+          include fastcgi.conf;
+          try_files \\\$uri \\\$uri/ =404;
+          fastcgi_index index.php;
+          fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+        }
+
+        location / {
+          try_files \\\$uri \\\$uri/ /wordpress/index.php?q=\\\$uri\\\$args;
+        }
+
+        rewrite /wp-admin\$ \\\$scheme://\\\$host\\\$uri/ permanent;
+
+        error_log /home/$1/$2/.log/error.log;
+        access_log /home/$1/$2/.log/access.log;
 
     }\" > /etc/nginx/sites-available/$2.conf"
 
@@ -228,8 +235,6 @@ access_log /home/$1/$2/.log/access.log;
       sudo systemctl reload apache2
       echo "Завершено"
       echo ""
-
-
 
 
 ;;
