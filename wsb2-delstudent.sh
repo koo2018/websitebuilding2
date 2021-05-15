@@ -1,25 +1,31 @@
 #!/bin/bash
 
 #
-# Здесь можно менять параметры (пробелы вокруг знака равно будут ошибкой)
+# Here you can change parameters (spaces around equal sign will give error)
 #
 
-# пароль администратора базы данных
+# db root passwd
 rootdbpasswd=""
 
+# chosen configuration
 webserver=""
 
-# Дальше править не нужно, если вы не понимаете, что делаете
+# don't make changes below this line if you don't understan what you're doing
 
 if [ "$rootdbpasswd" = "" ]; then
-echo -e "Не указан пароль администратора базы данных \$rootdbpasswd. \n"
+echo -e "Missing database root password \$rootdbpasswd. \n"
+stop_var=1
+fi
+
+if [ "$webserver" != "1" || "$webserver" != "2" ]; then
+echo -e "Unexisting webserver configuration. Only 1 and 2 are available. \n"
 stop_var=1
 fi
 
 
 if [ "$#" -eq 0 ]; then
-echo -e 'Для работы программы требуется один параметр\n
-Формат команды \n
+echo -e 'Only one parameter is expected\n
+ \n
 ./delstudent studentName \n'
 stop_var=1
 fi
@@ -29,23 +35,27 @@ fi
 
 grep "$1:" /etc/passwd >/dev/null
 if [ $? -ne 0 ]; then
-echo -e 'Пользователя '$1' не существует\n'
+echo -e 'There\'s no such a user: '$1'\n'
 stop_var=1
 fi
 
 if [ $stop_var ]; then
-echo -e "Скрипт остановлен \n"
+echo -e "Stopped! \n"
 exit
 fi
 
 case $webserver in
       1)
-
+        echo -n "Removing configuration "$1".conf on nginx...  "
         sudo rm -f /etc/nginx/sites-available/$1.conf
 
         sudo rm -f /etc/nginx/sites-enabled/$1.conf
-
+        echo "Completed"
+        
+        
+        echo -n "Restarting nginx...  "
         sudo systemctl reload nginx
+        echo "Completed"
 
 
       ;;
@@ -54,19 +64,19 @@ case $webserver in
 
         apache_vhosts="/etc/apache2/sites-available"
 
-        echo -n "Выключение сайта "$1" на сервере apache2...  "
+        echo -n "Turning off site "$1" on apache2...  "
         sudo a2dissite -q $1
         echo ""
 
-        echo -n "Удаление конфигурации "$1".conf на сервере apache2...  "
+        echo -n "Removing configuration "$1".conf on apache2...  "
         sudo rm -f $apache_vhosts"/"$1.conf
-        echo "Завершено"
+        echo "Completed"
         echo ""
 
 
-        echo -n "Перезапуск apache2...  "
+        echo -n "Restarting apache2...  "
         sudo systemctl reload apache2
-        echo "Завершено"
+        echo "Completed"
         echo ""
 
 
@@ -76,24 +86,24 @@ case $webserver in
 
 echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 echo "*"
-echo "*  Удаляем студента " $1
+echo "*  Deleting student " $1
 echo "*"
 echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 echo ""
 
-echo -n "Удаление пользователя "$1"...  "
+echo -n "Deleting user "$1"...  "
 sudo deluser  --remove-home $1
-echo "Завершено"
+echo "Completed"
 echo ""
 
-echo -n "Удаление пользователя MySQL и базы данных...  "
+echo -n "Deleting MySQL uesr and the database...  "
 mysql -u root -p$rootdbpasswd <<EOF
 DROP USER $1@'localhost';
 DROP DATABASE $1;
 FLUSH PRIVILEGES;
 EOF
-echo "Завершено"
+echo "Completed"
 echo ""
 
-echo "Удаление аккаунта пользователя "$1" завершено!"
+echo "Removing "$1"'s account is completed!"
 echo ""
