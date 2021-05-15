@@ -17,16 +17,15 @@ echo -e "Missing database root password \$rootdbpasswd. \n"
 stop_var=1
 fi
 
-if [ "$webserver" != "1" || "$webserver" != "2" ]; then
+if [ "$webserver" != "1" ] || [ "$webserver" != "2" ]; then
 echo -e "Unexisting webserver configuration. Only 1 and 2 are available. \n"
 stop_var=1
 fi
 
 
 if [ "$#" -eq 0 ]; then
-echo -e 'Only one parameter is expected\n
- \n
-./delstudent studentName \n'
+echo -e 'One parameter is expected\n
+./wsb2-delstudent.sh studentName \n'
 stop_var=1
 fi
 
@@ -35,7 +34,7 @@ fi
 
 grep "$1:" /etc/passwd >/dev/null
 if [ $? -ne 0 ]; then
-echo -e 'There\'s no such a user: '$1'\n'
+echo -e "There's no such a user: $1\n"
 stop_var=1
 fi
 
