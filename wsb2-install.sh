@@ -26,7 +26,7 @@ echo "Web Site Building 2.0
    easier to hold seminars on web site buildings and internet technologies.
    It's a deeply managable hosting for any large number of students.
 
-   This script allows to choose language (en, ru), platform (Apache2, Nginx)
+   This script allows to choose platform (Apache2, Nginx)
 
    It helps to create and manage students accounts and its groups. These
    accounts have everything for traing in web: personal directory for
@@ -46,22 +46,7 @@ echo "Firstly, we have to ask you 7 questions:
 "
 
 echo "1.
-You can choose a languge. English is default language.
-If you would like to install your own language pack, now choose English.
-en. English
-ru. Russian
-"
-
-until [[ $language == 'en' || $language == 'ru' ]]
-
-do
-  read -p "Choose your language [en],ru: " language
-  language=${language:-en}
-  echo
-done
-
-echo "2.
-Now you have to choose a webserver:
+Firstly you have to choose a webserver:
 1. Nginx
 2. Apache2
 "
@@ -75,7 +60,7 @@ done
 
 
 
-echo "3.
+echo "2.
 Please choose username for a main user or lecturer or teacher:
 "
 userexists=1
@@ -97,7 +82,7 @@ echo "3."
 domain=''
 until [[ $domain != '' ]]
 do
-  read -p "Укажите базовый домен вашего сервера, например, ya.ru: " domain
+  read -p "Enter base your server's domain (ya.ru, for example): " domain
 
   if [[ $domain == '' ]]
   then
