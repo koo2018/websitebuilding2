@@ -308,7 +308,7 @@ chmod -R 750 $curuser_home/.wsb2
 
 chmod -R 750 $curuser_home/.log
 
-chmod 640 $curuser_home/.wsb2/www/*
+chmod 640 $curuser_home/.wsb2/www/
 
 chmod 700 $curuser_home/.wsb2/bin
 
