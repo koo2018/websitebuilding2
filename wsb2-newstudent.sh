@@ -11,17 +11,17 @@ webserver=""
 
 
 if [ "$hname" = "" ]; then
-echo -e "Не указано доменное имя в переменной \$hname. \n"
+echo -e "Missing domain name. Check \$hname. \n"
 stop_var=1
 fi
 
 if [ "$rootdbpasswd" = "" ]; then
-echo -e "Не указан пароль администратора базы данных \$rootdbpasswd. \n"
+echo -e "Missing database administrator passwd. Check \$rootdbpasswd. \n"
 stop_var=1
 fi
 
 if [ "$dbpasswd" = "" ]; then
-echo -e "Не указан пароль пользователя базы данных \$dbpasswd. \n"
+echo -e "Missing database user passwd. Check \$dbpasswd. \n"
 stop_var=1
 fi
 
@@ -31,14 +31,14 @@ stop_var=1
 fi
 
 if [ $# -ne 2 ]; then
-echo -e 'Для работы программы требуется два параметра\n
-Формат команды \n
+echo -e 'Two parameters are required to start\n
+ \n
 ./newstudent groupName studentName \n'
 stop_var=1
 fi
 
 if [ $stop_var ]; then
-echo -e "Скрипт остановлен \n"
+echo -e "The script is stopped \n"
 exit
 fi
 
@@ -50,10 +50,10 @@ sudo -v
 
 grp=`grep "^$1:" /etc/group`
 if [[ $grp == '' ]]; then
-echo 'Создаем группу '$2
+echo 'Creating group '$2
 sudo addgroup $1
 else
-echo 'Группа '$1' уже существует'
+echo 'The group '$1' exists'
 fi
 echo ''
 
