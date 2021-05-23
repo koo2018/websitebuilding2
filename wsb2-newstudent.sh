@@ -25,6 +25,11 @@ echo -e "Не указан пароль пользователя базы дан
 stop_var=1
 fi
 
+if [ "$webserver" = "" ]; then
+echo -e "Missing webserver specification. Check \$dbpasswd. \n"
+stop_var=1
+fi
+
 if [ $# -ne 2 ]; then
 echo -e 'Для работы программы требуется два параметра\n
 Формат команды \n
