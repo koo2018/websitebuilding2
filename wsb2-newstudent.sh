@@ -59,62 +59,62 @@ echo ''
 
 echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 echo "*"
-echo "*  Создаем студента " $2 " в группе "$1
+echo "*  Creating student " $2 " in group "$1
 echo "*"
 echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 echo ""
 
 if ! [ -d $group_home ]; then
-echo 'Создаем директорию '$group_home
+echo 'Creating directory '$group_home
 sudo mkdir $group_home
 else
-echo 'Директория группы '$1' уже создана'
+echo 'Group directory '$1' exists'
 fi
 echo ''
 
 usr=`grep "^$2:" /etc/passwd`
 if [[ $usr == '' ]]; then
-echo 'Создаем пользователя '$2
+echo 'Creating user '$2
 sudo useradd -b /home/$1 -g $1 -m -s /bin/bash $2
 else
-echo 'Пользователь '$2' уже существует'
+echo 'The user '$2' exists'
 exit
 fi
 echo ''
 
 if ! [ -d $www ]; then
-echo 'Создаем директорию '$www
+echo 'Creating directory '$www
 sudo mkdir $www
 else
-echo 'Директория '$www' существует'
+echo 'Directory '$www' exists'
 fi
 echo ''
 
 if ! [ -d $wordpress ]; then
-echo 'Создаем директорию '$wordpress
+echo 'Creating directory '$wordpress
 sudo mkdir /home/$1/$2/www/wordpress
 else
-echo 'Директория '$wordpress' существует'
+echo 'Directory '$wordpress' exists'
 fi
 echo ''
 
-echo "Устанавливаем владельцев директории "$www" - "$2":"$1
+echo "Setting owners for the directory "$www" - "$2":"$1
 sudo chown $2:$1 $www
 echo ''
 
-echo "Устанавливаем владельцев директории "$wordpress" - "$2":"$1
+echo "Setting owners for the directory "$wordpress" - "$2":"$1
 sudo chown $2:$1 $wordpress
 echo ''
 
-echo -e "Устанавливаем пароль для "$2"\n"
+echo -e "Setting passwd for "$2"\n"
 
 echo -e "$dbpasswd\n$dbpasswd\n" | sudo passwd $2
 
-echo -n "Копируем папку WordPress...  "
+echo -n "Coping WordPress directory...  "
 
 sudo cp -r /home/teacher/.wsb2/wordpress/* /home/$1/$2/www/wordpress
 
-echo -e "Завершили\n"
+echo -e "Successfully done\n"
 
 
 
@@ -132,7 +132,7 @@ sudo chown $2:www-data /home/$1/$2/www/wordpress/wp-content/uploads -R
 
 sudo chmod g+w /home/$1/$2/www/wordpress/wp-content/uploads -R
 
-echo -n "Создание пользователя MySQL и базы данных...  "
+echo -n "Creating MySQL user and its database...  "
 mysql -u root -p$rootdbpasswd <<EOF
 CREATE USER $2@'localhost' IDENTIFIED BY '$dbpasswd';
 create database $2;
@@ -140,7 +140,7 @@ grant usage on *.* to $2@localhost identified by '$dbpasswd';
 grant all privileges on $2.* to $2@localhost;
 FLUSH PRIVILEGES;
 EOF
-echo "Завершено"
+echo "Completed"
 echo ""
 
 sudo mkdir /home/$1/$2/.log
@@ -209,7 +209,7 @@ case $webserver in
 
 
 
-      echo -e "\nФАЙЛ ДЛЯ АПАЧА\n"
+      echo -e "\nFile for Apache2\n"
       echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
       echo ""
 
@@ -232,13 +232,13 @@ case $webserver in
 
 
 
-      echo -n "Включение сайта "$1" на сервере apache2...  "
+      echo -n "Turning on the site "$1" on apache2 server...  "
       sudo a2ensite -q $2
       echo ''
 
-      echo -n "Перезапуск apache2...  "
+      echo -n "Restarting apache2...  "
       sudo systemctl reload apache2
-      echo "Завершено"
+      echo "Completed"
       echo ""
 
 
@@ -246,5 +246,5 @@ case $webserver in
 
 esac
 
-echo "Создание аккаунта пользователя "$2" завершено!"
+echo "Creating user account for "$2" completed!"
 echo -e "\n"
