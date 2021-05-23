@@ -513,7 +513,7 @@ sh -c "sed -e 's/dbpasswd=\"\"/dbpasswd=\"$dbuserpassword\"/' wsb2-newstudent.sh
 
 mv wsb2-newstudent{.new,.sh}
 
-sh -c "sed -e 's/dbpasswd=\"\"/webserver=\"$webserver\"/' wsb2-newstudent.sh > wsb2-newstudent.new"
+sh -c "sed -e 's/webserver=\"\"/webserver=\"$webserver\"/' wsb2-newstudent.sh > wsb2-newstudent.new"
 
 mv wsb2-newstudent{.new,.sh}
 
