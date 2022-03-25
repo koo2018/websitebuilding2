@@ -171,7 +171,14 @@ define('FTP_SSL', false);
 \" |  tee -a  ../wp-config.php > /dev/null
 
 fi
-" |  sudo tee   ./add_ftp.sh > /dev/null
+" |  sudo tee /home/$1/$2/www/wordpress/wp-admin/add_ftp.sh > /dev/null
+
+
+cp /home/$1/$2/www/wordpress/wp-admin/install.php{,.bak}
+
+sh -c "sed -e 's/<\/html>/<?php $output = shell_exec(\'bash add_ftp.sh\'); echo \"<pre>$output</pre>\"; ?><\/html>/' /home/$1/$2/www/wordpress/wp-admin/install.php > /home/$1/$2/www/wordpress/wp-admin/install.php.new"
+
+mv /home/$1/$2/www/wordpress/wp-admin/install.php{.new,}
 
 case $webserver in
       1)
