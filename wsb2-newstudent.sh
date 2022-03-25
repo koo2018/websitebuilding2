@@ -161,7 +161,8 @@ define('FTP_PLUGIN_DIR ', '/home/$1/$2/www/wordpress/wp-content/plugins/');
 define('FTP_USER', '$2');
 define('FTP_PASS', '$dbpasswd');
 define('FTP_HOST', '$hname:21');
-define('FTP_SSL', false); \n\n\" >> /home/$1/$2/www/wordpress/wp-config.php"
+define('FTP_SSL', false); \" >> /home/$1/$2/www/wordpress/wp-config.php
+"
 
 
 case $webserver in
