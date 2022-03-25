@@ -151,6 +151,19 @@ sudo chmod g+w /home/$1/$2/.log
 
 sudo sh -c "echo \"<?php phpinfo(); ?>\" > /home/$1/$2/www/phpinfo.php"
 
+sudo sh -c "echo  \"
+define('FS_CHMOD_FILE', 0755);
+define('FS_CHMOD_DIR', 0755);
+define('FS_METHOD', 'ftpext');
+define('FTP_BASE', '/home/$1/$2/www/wordpress/');
+define('FTP_CONTENT_DIR', '/home/$1/$2/www/wordpress/wp-content/');
+define('FTP_PLUGIN_DIR ', '/home/$1/$2/www/wordpress/wp-content/plugins/');
+define('FTP_USER', '$2');
+define('FTP_PASS', '$dbpasswd');
+define('FTP_HOST', '$hname:21');
+define('FTP_SSL', false); \n\n\" >> /home/$1/$2/www/wordpress/wp-config.php"
+
+
 case $webserver in
       1)
 
