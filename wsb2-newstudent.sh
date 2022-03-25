@@ -151,6 +151,27 @@ sudo chmod g+w /home/$1/$2/.log
 
 sudo sh -c "echo \"<?php phpinfo(); ?>\" > /home/$1/$2/www/phpinfo.php"
 
+echo "
+if grep \"FTP_\" ../wp-config.php >/dev/null; then
+echo \"<yes>\"
+else
+echo \"<no>\"
+
+echo \"
+define('FS_CHMOD_FILE', 0755);
+define('FS_CHMOD_DIR', 0755);
+define('FS_METHOD', 'ftpext');
+define('FTP_BASE', '/home/$1/$2/www/wordpress/');
+define('FTP_CONTENT_DIR', '/home/$1/$2/www/wordpress/wp-content/');
+define('FTP_PLUGIN_DIR ', '/home/$1/$2/www/wordpress/wp-content/plugins/');
+define('FTP_USER', '$2');
+define('FTP_PASS', '$dbpasswd');
+define('FTP_HOST', '$hname:21');
+define('FTP_SSL', false);
+\" |  tee -a  ../wp-config.php > /dev/null
+
+fi
+" |  sudo tee   ./add_ftp.sh > /dev/null
 
 case $webserver in
       1)
