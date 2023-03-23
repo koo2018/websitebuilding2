@@ -166,7 +166,7 @@ define('FTP_CONTENT_DIR', '/home/$1/$2/www/wordpress/wp-content/');
 define('FTP_PLUGIN_DIR ', '/home/$1/$2/www/wordpress/wp-content/plugins/');
 define('FTP_USER', '$2');
 define('FTP_PASS', '$dbpasswd');
-define('FTP_HOST', '$hname:21');
+define('FTP_HOST', '$2.$hname:21');
 define('FTP_SSL', false);
 \" |  tee -a  ../wp-config.php > /dev/null
 
