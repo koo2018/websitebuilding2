@@ -17,7 +17,7 @@ echo -e "Missing database root password \$rootdbpasswd. \n"
 stop_var=1
 fi
 
-if [ "$webserver" != "1" ] || [ "$webserver" != "2" ]; then
+if [ "$webserver" != "1" ] && [ "$webserver" != "2" ]; then
 echo -e "Unexisting webserver configuration. Only 1 and 2 are available. \n"
 stop_var=1
 fi
