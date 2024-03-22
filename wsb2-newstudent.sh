@@ -170,7 +170,7 @@ echo \"<no>\"
 echo \"
 define('FS_CHMOD_FILE', 0755);
 define('FS_CHMOD_DIR', 0755);
-define('FS_METHOD', 'ftpext');
+define('FS_METHOD', 'direct');
 define('FTP_BASE', '/home/$1/$2/www/wordpress/');
 define('FTP_CONTENT_DIR', '/home/$1/$2/www/wordpress/wp-content/');
 define('FTP_PLUGIN_DIR ', '/home/$1/$2/www/wordpress/wp-content/plugins/');
@@ -183,7 +183,7 @@ define('FTP_SSL', false);
 fi
 " |  sudo tee /home/$1/$2/www/wordpress/wp-admin/add_ftp.sh > /dev/null
 
-sed -i '1s/^/if (!defined('"'"'FS_METHOD'"'"')) define('"'"'FS_METHOD'"'"', '"'"'direct'"'"');\n/' /home/$1/$2/www/wordpress/wp-admin/wp-config.php
+# sed -i '1s/^/if (!defined('"'"'FS_METHOD'"'"')) define('"'"'FS_METHOD'"'"', '"'"'direct'"'"');\n/' /home/$1/$2/www/wordpress/wp-admin/wp-config.php
 
 
 
