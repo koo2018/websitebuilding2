@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-if [[ `cat /etc/issue.net` != 'Debian GNU/Linux 10' ]]
+if [[ `cat /etc/issue.net` != 'Debian GNU/Linux 12' ]]
 then
   echo -e "\nThis script requires Debian GNU/Linux 10.\nThis issue is: "
   echo -e `cat /etc/issue.net`
