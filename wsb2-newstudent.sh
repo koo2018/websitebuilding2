@@ -132,6 +132,14 @@ sudo chown $2:www-data /home/$1/$2/www/wordpress/wp-content/uploads -R
 
 sudo chmod g+w /home/$1/$2/www/wordpress/wp-content/uploads -R
 
+
+sudo mkdir /home/$1/$2/www/wordpress/wp-content/upgrade
+
+sudo chown $2:www-data /home/$1/$2/www/wordpress/wp-content/upgrade -R
+
+sudo chmod g+w /home/$1/$2/www/wordpress/wp-content/upgrade -R
+
+
 echo -n "Creating MySQL user and its database...  "
 sudo mysql -u root -p$rootdbpasswd <<EOF
 CREATE USER $2@'localhost' IDENTIFIED BY '$dbpasswd';
