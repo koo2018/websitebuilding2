@@ -159,6 +159,8 @@ sudo chmod g+w /home/$1/$2/.log
 
 sudo sh -c "echo \"<?php phpinfo(); ?>\" > /home/$1/$2/www/phpinfo.php"
 
+
+
 echo "
 if grep \"FTP_\" ../wp-config.php >/dev/null; then
 echo \"<yes>\"
@@ -180,6 +182,8 @@ define('FTP_SSL', false);
 
 fi
 " |  sudo tee /home/$1/$2/www/wordpress/wp-admin/add_ftp.sh > /dev/null
+
+sed -i '1s/^/if (!defined(\'FS_METHOD\')) define(\'FS_METHOD\', \'direct\'); /' /home/$1/$2/www/wordpress/wp-config.php
 
 
 cat /home/$1/$2/www/wordpress/wp-admin/install.php | 
