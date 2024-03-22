@@ -183,7 +183,8 @@ define('FTP_SSL', false);
 fi
 " |  sudo tee /home/$1/$2/www/wordpress/wp-admin/add_ftp.sh > /dev/null
 
-sed -i '1s/^/if (!defined(\'FS_METHOD\')) define(\'FS_METHOD\', \'direct\'); /' /home/$1/$2/www/wordpress/wp-config.php
+sed -i '1s/^/if (!defined('"'"'FS_METHOD'"'"')) define('"'"'FS_METHOD'"'"', '"'"'direct'"'"');\n/' wp-config.php
+
 
 
 cat /home/$1/$2/www/wordpress/wp-admin/install.php | 
