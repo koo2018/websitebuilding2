@@ -562,7 +562,7 @@ chmod 700 *
 
 echo -e "\ny\n$dbrootpassword\n$dbrootpassword\ny\ny\ny\ny" | /usr/bin/mysql_secure_installation
 
-echo -e "use mysql; update user set plugin='' where User='root'; flush privileges;" | mysql -uroot -p$dbrootpassword
+echo -e "use mysql; update user set plugin='' where User='root'; flush privileges;" | sudo mysql -uroot -p$dbrootpassword
 
 systemctl restart mysql.service
 
