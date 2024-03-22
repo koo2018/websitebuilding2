@@ -133,7 +133,7 @@ sudo chown $2:www-data /home/$1/$2/www/wordpress/wp-content/uploads -R
 sudo chmod g+w /home/$1/$2/www/wordpress/wp-content/uploads -R
 
 echo -n "Creating MySQL user and its database...  "
-mysql -u root -p$rootdbpasswd <<EOF
+sudo mysql -u root -p$rootdbpasswd <<EOF
 CREATE USER $2@'localhost' IDENTIFIED BY '$dbpasswd';
 create database $2;
 grant usage on *.* to $2@localhost identified by '$dbpasswd';
