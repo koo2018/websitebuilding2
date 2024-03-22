@@ -122,7 +122,7 @@ sudo find /home/$1/$2/www -type d -exec chmod 755 {} \;
 
 sudo find /home/$1/$2/www -type f -exec chmod 644 {} \;
 
-sudo chmod 775 /home/$1/$2/www/wordpress
+sudo chmod 775 -R /home/$1/$2/www/wordpress
 
 sudo chown $2:www-data -R /home/$1/$2/www/wordpress
 
