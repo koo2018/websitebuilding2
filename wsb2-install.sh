@@ -322,6 +322,8 @@ apt-get -qq -y install locales
 
 localedef -i ru_RU -f UTF-8 ru_RU.UTF-8
 
+export LC_ALL="ru_RU.UTF-8"
+
 apt-get -qq -y install sudo ssh
 
 apt-get -qq -y install mc lynx man proftpd htop zip unzip bash-completion whois
@@ -494,6 +496,8 @@ chown -R $curuser:$curuser $curuser_home/.wsb2/bin/*
 chmod u+x $curuser_home/.wsb2/bin/*
 
 echo -e "\nPATH=\$PATH:$curuser_home/.wsb2/bin\n" >> $curuser_home/.bashrc
+
+echo -e "\nexport LC_ALL="ru_RU.UTF-8"\n" >> $curuser_home/.bashrc
 
 echo "Настраиваем скрипт newstudent"
 
