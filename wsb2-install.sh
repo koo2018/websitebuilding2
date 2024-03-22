@@ -244,6 +244,12 @@ do
 
 done
 
+apt-get -qq -y install locales
+
+localedef -i ru_RU -f UTF-8 ru_RU.UTF-8
+
+export LC_ALL="ru_RU.UTF-8"
+
 clear
 
 echo "So... the configuration we have:"
@@ -318,11 +324,7 @@ apt-get -qq -y upgrade
 
 ###  MAIN PACKAGES INSTALLATION
 
-apt-get -qq -y install locales
 
-localedef -i ru_RU -f UTF-8 ru_RU.UTF-8
-
-export LC_ALL="ru_RU.UTF-8"
 
 apt-get -qq -y install sudo ssh
 
