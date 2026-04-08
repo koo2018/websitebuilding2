@@ -389,6 +389,18 @@ index index.php index.html index.htm;
 
 server_name $curuser.$domain;
 
+location ~ ^/phpmyadmin/.+\.php$ {
+root /usr/share/;
+include fastcgi.conf;
+fastcgi_pass unix:/var/run/php/php$php_version-fpm.sock;
+}
+
+location /phpmyadmin {
+root /usr/share/;
+index index.php;
+try_files \$uri \$uri/ =404;
+}
+
 location ~ \.php$ {
 include fastcgi.conf;
 try_files \$uri \$uri/ =404;
@@ -406,6 +418,14 @@ access_log $curuser_home/.log/$curuser-access.log;
     systemctl restart nginx
 
     systemctl start php$php_version-fpm
+
+    echo "phpmyadmin phpmyadmin/dbconfig-install boolean true" | debconf-set-selections
+    echo "phpmyadmin phpmyadmin/mysql/admin-pass password $dbrootpassword" | debconf-set-selections
+    echo "phpmyadmin phpmyadmin/mysql/app-pass password $dbrootpassword" | debconf-set-selections
+    echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect" | debconf-set-selections
+    DEBIAN_FRONTEND=noninteractive apt-get -qq -y install phpmyadmin
+
+    systemctl restart nginx
 
     ;;
   2)
@@ -461,6 +481,12 @@ access_log $curuser_home/.log/$curuser-access.log;
     " > /etc/apache2/sites-available/$curuser.conf
 
     a2ensite $curuser
+
+    echo "phpmyadmin phpmyadmin/dbconfig-install boolean true" | debconf-set-selections
+    echo "phpmyadmin phpmyadmin/mysql/admin-pass password $dbrootpassword" | debconf-set-selections
+    echo "phpmyadmin phpmyadmin/mysql/app-pass password $dbrootpassword" | debconf-set-selections
+    echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2" | debconf-set-selections
+    DEBIAN_FRONTEND=noninteractive apt-get -qq -y install phpmyadmin
 
     systemctl reload apache2
     ;;
