@@ -38,7 +38,7 @@ echo -e "There's no such a user: $1\n"
 stop_var=1
 fi
 
-if [ $stop_var ]; then
+if [ "$stop_var" = "1" ]; then
 echo -e "Stopped! \n"
 exit
 fi

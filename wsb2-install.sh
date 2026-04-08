@@ -1,10 +1,11 @@
 #!/bin/bash
 
 
-if [[ `cat /etc/issue.net` != 'Debian GNU/Linux 12' ]]
+_issue=`cat /etc/issue.net`
+if [[ "$_issue" != 'Debian GNU/Linux 12' && "$_issue" != 'Debian GNU/Linux 13' ]]
 then
-  echo -e "\nThis script requires Debian GNU/Linux 10.\nThis issue is: "
-  echo -e `cat /etc/issue.net`
+  echo -e "\nThis script requires Debian GNU/Linux 12 or 13.\nThis issue is: "
+  echo -e "$_issue"
   echo -e "\nStoped.\n"
   exit
 fi
@@ -370,7 +371,7 @@ case $webserver in
 	location ~ \.php$ {
 		include fastcgi.conf;
 		try_files \$uri \$uri/ =404;
-    fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+    fastcgi_pass unix:/var/run/php/php$php_version-fpm.sock;
 	}
 
   error_log $curuser_home/.log/$domain-error.log;
@@ -391,7 +392,7 @@ server_name $curuser.$domain;
 location ~ \.php$ {
 include fastcgi.conf;
 try_files \$uri \$uri/ =404;
-fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+fastcgi_pass unix:/var/run/php/php$php_version-fpm.sock;
 }
 
 error_log $curuser_home/.log/$curuser-error.log;
@@ -491,7 +492,7 @@ wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websi
 
 wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/master/wsb2-tarbkp.sh
 
-wget -P $curuser_home/.wbs2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/master/wsb2-zipbkp.sh
+wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/master/wsb2-zipbkp.sh
 
 chown -R $curuser:$curuser $curuser_home/.wsb2/bin/*
 
@@ -520,6 +521,10 @@ sh -c "sed -e 's/dbpasswd=\"\"/dbpasswd=\"$dbuserpassword\"/' wsb2-newstudent.sh
 mv wsb2-newstudent{.new,.sh}
 
 sh -c "sed -e 's/webserver=\"\"/webserver=\"$webserver\"/' wsb2-newstudent.sh > wsb2-newstudent.new"
+
+mv wsb2-newstudent{.new,.sh}
+
+sh -c "sed -e 's/phpver=\"\"/phpver=\"$php_version\"/' wsb2-newstudent.sh > wsb2-newstudent.new"
 
 mv wsb2-newstudent{.new,.sh}
 

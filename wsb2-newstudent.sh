@@ -9,6 +9,8 @@ dbpasswd=""
 
 webserver=""
 
+phpver=""
+
 
 if [ "$hname" = "" ]; then
 echo -e "Missing domain name. Check \$hname. \n"
@@ -37,10 +39,38 @@ echo -e 'Two parameters are required to start\n
 stop_var=1
 fi
 
-if [ $stop_var ]; then
+if [ "$stop_var" = "1" ]; then
 echo -e "The script is stopped \n"
 exit
 fi
+
+STUDENT="$2"
+GROUP="$1"
+CREATED_USER=0
+CREATED_DB=0
+CREATED_VHOST=0
+
+rollback() {
+    echo -e "\nПроизошла ошибка. Выполняем откат изменений...\n"
+    if [ "$CREATED_VHOST" = "1" ]; then
+        case $webserver in
+            1) sudo rm -f /etc/nginx/sites-available/$STUDENT.conf
+               sudo rm -f /etc/nginx/sites-enabled/$STUDENT.conf
+               sudo systemctl reload nginx 2>/dev/null ;;
+            2) sudo a2dissite -q $STUDENT 2>/dev/null
+               sudo rm -f /etc/apache2/sites-available/$STUDENT.conf
+               sudo systemctl reload apache2 2>/dev/null ;;
+        esac
+    fi
+    if [ "$CREATED_DB" = "1" ]; then
+        sudo mysql -u root -p$rootdbpasswd -e "DROP DATABASE IF EXISTS $STUDENT; DROP USER IF EXISTS '$STUDENT'@'localhost'; FLUSH PRIVILEGES;" 2>/dev/null
+    fi
+    if [ "$CREATED_USER" = "1" ]; then
+        sudo deluser --remove-home $STUDENT 2>/dev/null
+    fi
+}
+
+trap 'EC=$?; [ $EC -ne 0 ] && rollback' EXIT
 
 group_home="/home/$1"
 www="/home/$1/$2/www"
@@ -75,7 +105,8 @@ echo ''
 usr=`grep "^$2:" /etc/passwd`
 if [[ $usr == '' ]]; then
 echo 'Creating user '$2
-sudo useradd -b /home/$1 -g $1 -m -s /bin/bash $2
+sudo useradd -b /home/$1 -g $1 -m -s /bin/bash $2 || exit 1
+CREATED_USER=1
 else
 echo 'The user '$2' exists'
 exit
@@ -112,7 +143,7 @@ echo -e "$dbpasswd\n$dbpasswd\n" | sudo passwd $2
 
 echo -n "Coping WordPress directory...  "
 
-sudo cp -r /home/teacher/.wsb2/wordpress/* /home/$1/$2/www/wordpress
+sudo cp -r /home/teacher/.wsb2/wordpress/* /home/$1/$2/www/wordpress || exit 1
 
 echo -e "Successfully done\n"
 
@@ -141,13 +172,14 @@ sudo chmod g+w /home/$1/$2/www/wordpress/wp-content/upgrade -R
 
 
 echo -n "Creating MySQL user and its database...  "
-sudo mysql -u root -p$rootdbpasswd <<EOF
+sudo mysql -u root -p$rootdbpasswd <<EOF || exit 1
 CREATE USER $2@'localhost' IDENTIFIED BY '$dbpasswd';
 create database $2;
 grant usage on *.* to $2@localhost identified by '$dbpasswd';
 grant all privileges on $2.* to $2@localhost;
 FLUSH PRIVILEGES;
 EOF
+CREATED_DB=1
 echo "Completed"
 echo ""
 
@@ -223,7 +255,7 @@ case $webserver in
           include fastcgi.conf;
           try_files \\\$uri \\\$uri/ =404;
           fastcgi_index index.php;
-          fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+          fastcgi_pass unix:/var/run/php/php${phpver}-fpm.sock;
         }
 
         location / {
@@ -239,7 +271,8 @@ case $webserver in
 
       sudo ln -s /etc/nginx/sites-available/$2.conf /etc/nginx/sites-enabled/
 
-      sudo systemctl restart nginx
+      CREATED_VHOST=1
+      sudo systemctl restart nginx || exit 1
       ;;
 
       2)
@@ -277,7 +310,8 @@ case $webserver in
       echo ''
 
       echo -n "Restarting apache2...  "
-      sudo systemctl reload apache2
+      CREATED_VHOST=1
+      sudo systemctl reload apache2 || exit 1
       echo "Completed"
       echo ""
 
