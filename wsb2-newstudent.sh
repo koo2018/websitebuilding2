@@ -159,6 +159,8 @@ sudo chown $2:www-data /home/$1/$2/www/wp-content/upgrade -R
 
 sudo chmod g+w /home/$1/$2/www/wp-content/upgrade -R
 
+sudo chmod g+w /home/$1/$2/www/wp-content -R
+
 
 echo -n "Creating MySQL user and its database...  "
 sudo mysql -u root -p$rootdbpasswd <<EOF || exit 1
