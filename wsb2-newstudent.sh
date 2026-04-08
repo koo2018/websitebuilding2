@@ -144,6 +144,8 @@ sudo find /home/$1/$2/www -type f -exec chmod 644 {} \;
 
 sudo chown $2:www-data -R /home/$1/$2/www
 
+sudo chmod g+w /home/$1/$2/www
+
 sudo mkdir -p /home/$1/$2/www/wp-content/uploads
 
 sudo chown $2:www-data /home/$1/$2/www/wp-content/uploads -R
@@ -178,37 +180,16 @@ sudo chmod g+w /home/$1/$2/.log
 
 sudo sh -c "echo \"<?php phpinfo(); ?>\" > /home/$1/$2/www/phpinfo.php"
 
-
-
-echo "
-if grep \"FTP_\" ../wp-config.php >/dev/null; then
-echo \"<yes>\"
-else
-echo \"<no>\"
-
-echo \"
-define('FS_CHMOD_FILE', 0755);
-define('FS_CHMOD_DIR', 0755);
-define('FS_METHOD', 'direct');
-define('FTP_BASE', '/home/$1/$2/www/');
-define('FTP_CONTENT_DIR', '/home/$1/$2/www/wp-content/');
-define('FTP_PLUGIN_DIR ', '/home/$1/$2/www/wp-content/plugins/');
-define('FTP_USER', '$2');
-define('FTP_PASS', '$dbpasswd');
-define('FTP_HOST', '$2.$hname:21');
-define('FTP_SSL', false);
-\" |  tee -a  ../wp-config.php > /dev/null
-
-fi
-" |  sudo tee /home/$1/$2/www/wp-admin/add_ftp.sh > /dev/null
-
-# sed -i '1s/^/if (!defined('"'"'FS_METHOD'"'"')) define('"'"'FS_METHOD'"'"', '"'"'direct'"'"');\n/' /home/$1/$2/www/wordpress/wp-admin/wp-config.php
-
-
-
-cat /home/$1/$2/www/wp-admin/install.php |
-awk '{sub(/<\/body>/,"<?php $output = shell_exec(\"bash add_ftp.sh\"); echo \"<pre>$output</pre>\";?></body>" )}1' |
-sudo tee /home/$1/$2/www/wp-admin/install.php > /dev/null
+echo -n "Creating wp-config.php...  "
+sudo sed \
+  -e "s/database_name_here/$STUDENT/g" \
+  -e "s/username_here/$STUDENT/g" \
+  -e "s/password_here/$dbpasswd/g" \
+  /home/$1/$2/www/wp-config-sample.php | sudo tee /home/$1/$2/www/wp-config.php > /dev/null
+sudo sed -i "/require_once ABSPATH/i define('FS_METHOD', 'direct');" /home/$1/$2/www/wp-config.php
+sudo chown $2:www-data /home/$1/$2/www/wp-config.php
+sudo chmod 640 /home/$1/$2/www/wp-config.php
+echo "Done"
 
 case $webserver in
       1)
