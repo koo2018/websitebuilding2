@@ -638,6 +638,8 @@ mysql -uroot -p"$dbrootpassword" -e "DROP USER IF EXISTS 'phpmyadmin'@'localhost
 mysql -uroot -p"$dbrootpassword" -e "CREATE USER 'phpmyadmin'@'localhost' IDENTIFIED BY '$dbrootpassword';"
 mysql -uroot -p"$dbrootpassword" -e "GRANT ALL PRIVILEGES ON phpmyadmin.* TO 'phpmyadmin'@'localhost'; FLUSH PRIVILEGES;"
 
+mysql -uroot -p"$dbrootpassword" -e "CREATE DATABASE IF NOT EXISTS phpmyadmin CHARACTER SET utf8 COLLATE utf8_bin;"
+
 mysql -uroot -p"$dbrootpassword" phpmyadmin < /usr/share/phpmyadmin/sql/create_tables.sql
 
 cat > /etc/phpmyadmin/config-db.php << 'PMACONF'
