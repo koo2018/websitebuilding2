@@ -204,6 +204,8 @@ case $webserver in
 
         server_name $2.$hname;
 
+        client_max_body_size 64M;
+
         location ~* ^.+.(xml|ogg|ogv|svg|svgz|eot|otf|woff|mp4|ttf|css|rss|atom|js|jpg|jpeg|gif|png|ico|zip|tgz|gz|rar|bz2|doc|xls|exe|ppt|tar|mid|midi|wav|bmp|rtf)$ {
           expires max;
         }
@@ -262,6 +264,8 @@ case $webserver in
               Options Indexes FollowSymLinks
               AllowOverride All
               Require all granted
+              php_value upload_max_filesize 64M
+              php_value post_max_size 64M
       </Directory>
       ErrorLog ${APACHE_LOG_DIR}/error.log
           CustomLog ${APACHE_LOG_DIR}/access.log combined

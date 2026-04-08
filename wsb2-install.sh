@@ -348,7 +348,11 @@ case $webserver in
 
     cp  $php_path{,.bak}
 
-    sh -c "sed -e 's/upload_max_filesize = 2M/upload_max_filesize = 50M/' $php_path > $php_path.new"
+    sh -c "sed -e 's/upload_max_filesize = 2M/upload_max_filesize = 64M/' $php_path > $php_path.new"
+
+    mv $php_path{.new,}
+
+    sh -c "sed -e 's/post_max_size = 8M/post_max_size = 64M/' $php_path > $php_path.new"
 
     mv $php_path{.new,}
 
@@ -367,6 +371,8 @@ case $webserver in
 	index index.php index.html index.htm;
 
 	server_name _;
+
+	client_max_body_size 64M;
 
 	location ~ \.php$ {
 		include fastcgi.conf;
@@ -388,6 +394,8 @@ root $curuser_home/.wsb2/www/;
 index index.php index.html index.htm;
 
 server_name $curuser.$domain;
+
+client_max_body_size 64M;
 
 location ~ ^/phpmyadmin/.+\.php$ {
 root /usr/share/;
@@ -434,6 +442,19 @@ access_log $curuser_home/.log/$curuser-access.log;
 
     php_version=`php -i | grep "Loaded Configuration File" | awk -F "=>" '{print $2}' | awk -F "/" '{print $4}'`
 
+    php_path=`php -i | grep "Loaded Configuration File" | awk -F "=>" '{print $2}'`
+
+    php_path=`echo "${php_path/cli/apache2}"`
+
+    cp $php_path{,.bak}
+
+    sh -c "sed -e 's/upload_max_filesize = 2M/upload_max_filesize = 64M/' $php_path > $php_path.new"
+
+    mv $php_path{.new,}
+
+    sh -c "sed -e 's/post_max_size = 8M/post_max_size = 64M/' $php_path > $php_path.new"
+
+    mv $php_path{.new,}
 
     cp /etc/apache2/conf-available/charset.conf{,.bak}
 
