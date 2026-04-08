@@ -486,13 +486,13 @@ unzip latest-ru_RU.zip
 
 rm -f latest-ru_RU.zip
 
-wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/master/wsb2-newstudent.sh
+wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/main/wsb2-newstudent.sh
 
-wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/master/wsb2-delstudent.sh
+wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/main/wsb2-delstudent.sh
 
-wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/master/wsb2-tarbkp.sh
+wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/main/wsb2-tarbkp.sh || true
 
-wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/master/wsb2-zipbkp.sh
+wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/main/wsb2-zipbkp.sh || true
 
 chown -R $curuser:$curuser $curuser_home/.wsb2/bin/*
 
@@ -536,44 +536,39 @@ mv wsb2-delstudent{.new,.sh}
 
 echo "Настраиваем скрипт tarbkp"
 
-sh -c "sed -e 's/TEACHER_NAME=\"\"/TEACHER_NAME=\"$curuser\"/' tarbkp > tarbkp.new"
-
-mv tarbkp{.new,}
-
-sh -c "sed -e 's/BACKUPS_DIR=\"\"/BACKUPS_DIR=\"$curhom\/backups\"/' tarbkp > tarbkp.new"
-
-mv tarbkp{.new,}
-
-sh -c "sed -e 's/root -p1234/root -p$dbrootpassword/' tarbkp > tarbkp.new"
-
-mv tarbkp{.new,}
-
-
-chown $curuser:$curuser tarbkp
-
-chmod 700 ./tarbkp
+if [ -f wsb2-tarbkp.sh ]; then
+  sh -c "sed -e 's/TEACHER_NAME=\"\"/TEACHER_NAME=\"$curuser\"/' wsb2-tarbkp.sh > wsb2-tarbkp.new"
+  mv wsb2-tarbkp.sh{,.bak} && mv wsb2-tarbkp.new wsb2-tarbkp.sh
+  sh -c "sed -e 's/BACKUPS_DIR=\"\"/BACKUPS_DIR=\"$curhom\/backups\"/' wsb2-tarbkp.sh > wsb2-tarbkp.new"
+  mv wsb2-tarbkp.sh{,.bak} && mv wsb2-tarbkp.new wsb2-tarbkp.sh
+  sh -c "sed -e 's/root -p1234/root -p$dbrootpassword/' wsb2-tarbkp.sh > wsb2-tarbkp.new"
+  mv wsb2-tarbkp.sh{,.bak} && mv wsb2-tarbkp.new wsb2-tarbkp.sh
+  chmod 700 wsb2-tarbkp.sh
+fi
 
 echo "Настраиваем скрипт zipbkp"
 
-sh -c "sed -e 's/TEACHER_NAME=\"\"/TEACHER_NAME=\"$curuser\"/' zipbkp > zipbkp.new"
-
-mv zipbkp{.new,}
-
-sh -c "sed -e 's/BACKUPS_DIR=\"\"/BACKUPS_DIR=\"$curhom\/backups\"/' zipbkp > zipbkp.new"
-
-mv zipbkp{.new,}
-
-sh -c "sed -e 's/root -p1234/root -p$dbrootpassword/' zipbkp > zipbkp.new"
-
-mv zipbkp{.new,}
+if [ -f wsb2-zipbkp.sh ]; then
+  sh -c "sed -e 's/TEACHER_NAME=\"\"/TEACHER_NAME=\"$curuser\"/' wsb2-zipbkp.sh > wsb2-zipbkp.new"
+  mv wsb2-zipbkp.sh{,.bak} && mv wsb2-zipbkp.new wsb2-zipbkp.sh
+  sh -c "sed -e 's/BACKUPS_DIR=\"\"/BACKUPS_DIR=\"$curhom\/backups\"/' wsb2-zipbkp.sh > wsb2-zipbkp.new"
+  mv wsb2-zipbkp.sh{,.bak} && mv wsb2-zipbkp.new wsb2-zipbkp.sh
+  sh -c "sed -e 's/root -p1234/root -p$dbrootpassword/' wsb2-zipbkp.sh > wsb2-zipbkp.new"
+  mv wsb2-zipbkp.sh{,.bak} && mv wsb2-zipbkp.new wsb2-zipbkp.sh
+  chmod 700 wsb2-zipbkp.sh
+fi
 
 chown $curuser:$curuser *
 
 chmod 700 *
 
-echo -e "\ny\n$dbrootpassword\n$dbrootpassword\ny\ny\ny\ny" | /usr/bin/mysql_secure_installation
-
-echo -e "use mysql; update user set plugin='' where User='root'; flush privileges;" | sudo mysql -uroot -p$dbrootpassword
+mysql -uroot <<EOF
+ALTER USER 'root'@'localhost' IDENTIFIED BY '$dbrootpassword';
+DELETE FROM mysql.global_priv WHERE User='';
+DELETE FROM mysql.global_priv WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+DROP DATABASE IF EXISTS test;
+FLUSH PRIVILEGES;
+EOF
 
 systemctl restart mysql.service
 
