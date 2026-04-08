@@ -433,6 +433,23 @@ access_log $curuser_home/.log/$curuser-access.log;
     echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect" | debconf-set-selections
     DEBIAN_FRONTEND=noninteractive apt-get -qq -y install phpmyadmin
 
+    mysql -u root -p"$dbrootpassword" -e "DROP USER IF EXISTS 'phpmyadmin'@'localhost';"
+    mysql -u root -p"$dbrootpassword" -e "CREATE USER 'phpmyadmin'@'localhost' IDENTIFIED BY '$dbrootpassword';"
+    mysql -u root -p"$dbrootpassword" -e "GRANT ALL PRIVILEGES ON phpmyadmin.* TO 'phpmyadmin'@'localhost'; FLUSH PRIVILEGES;"
+
+    cat > /etc/phpmyadmin/config-db.php << 'PMACONF'
+<?php
+PMACONF
+    echo "\$dbuser='phpmyadmin';" >> /etc/phpmyadmin/config-db.php
+    echo "\$dbpass='$dbrootpassword';" >> /etc/phpmyadmin/config-db.php
+    cat >> /etc/phpmyadmin/config-db.php << 'PMACONF'
+$basepath='';
+$dbname='phpmyadmin';
+$dbserver='localhost';
+$dbport='3306';
+$dbtype='mysql';
+PMACONF
+
     systemctl restart nginx
 
     ;;
@@ -508,6 +525,23 @@ access_log $curuser_home/.log/$curuser-access.log;
     echo "phpmyadmin phpmyadmin/mysql/app-pass password $dbrootpassword" | debconf-set-selections
     echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2" | debconf-set-selections
     DEBIAN_FRONTEND=noninteractive apt-get -qq -y install phpmyadmin
+
+    mysql -u root -p"$dbrootpassword" -e "DROP USER IF EXISTS 'phpmyadmin'@'localhost';"
+    mysql -u root -p"$dbrootpassword" -e "CREATE USER 'phpmyadmin'@'localhost' IDENTIFIED BY '$dbrootpassword';"
+    mysql -u root -p"$dbrootpassword" -e "GRANT ALL PRIVILEGES ON phpmyadmin.* TO 'phpmyadmin'@'localhost'; FLUSH PRIVILEGES;"
+
+    cat > /etc/phpmyadmin/config-db.php << 'PMACONF'
+<?php
+PMACONF
+    echo "\$dbuser='phpmyadmin';" >> /etc/phpmyadmin/config-db.php
+    echo "\$dbpass='$dbrootpassword';" >> /etc/phpmyadmin/config-db.php
+    cat >> /etc/phpmyadmin/config-db.php << 'PMACONF'
+$basepath='';
+$dbname='phpmyadmin';
+$dbserver='localhost';
+$dbport='3306';
+$dbtype='mysql';
+PMACONF
 
     systemctl reload apache2
     ;;
