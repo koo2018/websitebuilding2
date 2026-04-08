@@ -15,6 +15,11 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
+LOGFILE="/var/log/wsb2-install.log"
+exec > >(tee -a "$LOGFILE") 2>&1
+echo "Installation log: $LOGFILE"
+echo "Started: $(date)"
+
 clear
 
 echo "Web Site Building 2.0
@@ -433,23 +438,6 @@ access_log $curuser_home/.log/$curuser-access.log;
     echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect" | debconf-set-selections
     DEBIAN_FRONTEND=noninteractive apt-get -qq -y install phpmyadmin
 
-    mysql -u root -p"$dbrootpassword" -e "DROP USER IF EXISTS 'phpmyadmin'@'localhost';"
-    mysql -u root -p"$dbrootpassword" -e "CREATE USER 'phpmyadmin'@'localhost' IDENTIFIED BY '$dbrootpassword';"
-    mysql -u root -p"$dbrootpassword" -e "GRANT ALL PRIVILEGES ON phpmyadmin.* TO 'phpmyadmin'@'localhost'; FLUSH PRIVILEGES;"
-
-    cat > /etc/phpmyadmin/config-db.php << 'PMACONF'
-<?php
-PMACONF
-    echo "\$dbuser='phpmyadmin';" >> /etc/phpmyadmin/config-db.php
-    echo "\$dbpass='$dbrootpassword';" >> /etc/phpmyadmin/config-db.php
-    cat >> /etc/phpmyadmin/config-db.php << 'PMACONF'
-$basepath='';
-$dbname='phpmyadmin';
-$dbserver='localhost';
-$dbport='3306';
-$dbtype='mysql';
-PMACONF
-
     systemctl restart nginx
 
     ;;
@@ -525,23 +513,6 @@ PMACONF
     echo "phpmyadmin phpmyadmin/mysql/app-pass password $dbrootpassword" | debconf-set-selections
     echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2" | debconf-set-selections
     DEBIAN_FRONTEND=noninteractive apt-get -qq -y install phpmyadmin
-
-    mysql -u root -p"$dbrootpassword" -e "DROP USER IF EXISTS 'phpmyadmin'@'localhost';"
-    mysql -u root -p"$dbrootpassword" -e "CREATE USER 'phpmyadmin'@'localhost' IDENTIFIED BY '$dbrootpassword';"
-    mysql -u root -p"$dbrootpassword" -e "GRANT ALL PRIVILEGES ON phpmyadmin.* TO 'phpmyadmin'@'localhost'; FLUSH PRIVILEGES;"
-
-    cat > /etc/phpmyadmin/config-db.php << 'PMACONF'
-<?php
-PMACONF
-    echo "\$dbuser='phpmyadmin';" >> /etc/phpmyadmin/config-db.php
-    echo "\$dbpass='$dbrootpassword';" >> /etc/phpmyadmin/config-db.php
-    cat >> /etc/phpmyadmin/config-db.php << 'PMACONF'
-$basepath='';
-$dbname='phpmyadmin';
-$dbserver='localhost';
-$dbport='3306';
-$dbtype='mysql';
-PMACONF
 
     systemctl reload apache2
     ;;
@@ -647,7 +618,13 @@ chown $curuser:$curuser *
 
 chmod 700 *
 
-mysql -uroot <<EOF
+if mysql -uroot -e "SELECT 1;" 2>/dev/null; then
+    MYSQL_ROOT="mysql -uroot"
+else
+    MYSQL_ROOT="mysql -uroot -p${dbrootpassword}"
+fi
+
+$MYSQL_ROOT <<EOF
 ALTER USER 'root'@'localhost' IDENTIFIED BY '$dbrootpassword';
 DELETE FROM mysql.global_priv WHERE User='';
 DELETE FROM mysql.global_priv WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
@@ -656,6 +633,23 @@ FLUSH PRIVILEGES;
 EOF
 
 systemctl restart mysql.service
+
+mysql -uroot -p"$dbrootpassword" -e "DROP USER IF EXISTS 'phpmyadmin'@'localhost';"
+mysql -uroot -p"$dbrootpassword" -e "CREATE USER 'phpmyadmin'@'localhost' IDENTIFIED BY '$dbrootpassword';"
+mysql -uroot -p"$dbrootpassword" -e "GRANT ALL PRIVILEGES ON phpmyadmin.* TO 'phpmyadmin'@'localhost'; FLUSH PRIVILEGES;"
+
+cat > /etc/phpmyadmin/config-db.php << 'PMACONF'
+<?php
+PMACONF
+echo "\$dbuser='phpmyadmin';" >> /etc/phpmyadmin/config-db.php
+echo "\$dbpass='$dbrootpassword';" >> /etc/phpmyadmin/config-db.php
+cat >> /etc/phpmyadmin/config-db.php << 'PMACONF'
+$basepath='';
+$dbname='phpmyadmin';
+$dbserver='localhost';
+$dbport='3306';
+$dbtype='mysql';
+PMACONF
 
 #cp /etc/ssh/sshd_config{,.bak}
 
