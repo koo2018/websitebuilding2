@@ -338,6 +338,8 @@ apt-get -qq -y install mc lynx man proftpd htop zip unzip bash-completion whois
 
 apt-get -qq -y install php-gd php-mysql php-curl php-json php-mbstring php-xml php-opcache
 
+apt-get -qq -y install mariadb-client mariadb-server
+
 
 case $webserver in
   1)
@@ -525,8 +527,6 @@ echo -e "<h1>DEFAULT SITE</h1>" > /var/www/html/index.php
 echo -e "<?php\nphpinfo();\n?>\n" > $curuser_home/.wsb2/www/phpinfo.php
 
 echo -e "<h1>$curuser'S SITE</h1>" > $curuser_home/.wsb2/www/index.php
-
-apt-get -qq -y install mariadb-client mariadb-server
 
 apt-get -qq -y install  memcached php-memcache
 
