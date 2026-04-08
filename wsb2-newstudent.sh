@@ -28,7 +28,7 @@ stop_var=1
 fi
 
 if [ "$webserver" = "" ]; then
-echo -e "Missing webserver specification. Check \$dbpasswd. \n"
+echo -e "Missing webserver specification. Check \$webserver. \n"
 stop_var=1
 fi
 
@@ -74,13 +74,12 @@ trap 'EC=$?; [ $EC -ne 0 ] && rollback' EXIT
 
 group_home="/home/$1"
 www="/home/$1/$2/www"
-wordpress="/home/$1/$2/www/wordpress"
 
 sudo -v
 
 grp=`grep "^$1:" /etc/group`
 if [[ $grp == '' ]]; then
-echo 'Creating group '$2
+echo 'Creating group '$1
 sudo addgroup $1
 else
 echo 'The group '$1' exists'
@@ -121,20 +120,8 @@ echo 'Directory '$www' exists'
 fi
 echo ''
 
-if ! [ -d $wordpress ]; then
-echo 'Creating directory '$wordpress
-sudo mkdir /home/$1/$2/www/wordpress
-else
-echo 'Directory '$wordpress' exists'
-fi
-echo ''
-
 echo "Setting owners for the directory "$www" - "$2":"$1
 sudo chown $2:$1 $www
-echo ''
-
-echo "Setting owners for the directory "$wordpress" - "$2":"$1
-sudo chown $2:$1 $wordpress
 echo ''
 
 echo -e "Setting passwd for "$2"\n"
@@ -143,32 +130,32 @@ echo -e "$dbpasswd\n$dbpasswd\n" | sudo passwd $2
 
 echo -n "Coping WordPress directory...  "
 
-sudo cp -r /home/teacher/.wsb2/wordpress/* /home/$1/$2/www/wordpress || exit 1
+sudo cp -r /home/teacher/.wsb2/wordpress/* /home/$1/$2/www/ || exit 1
 
 echo -e "Successfully done\n"
 
 
 
+sudo chmod 711 /home/$1/$2
+
 sudo find /home/$1/$2/www -type d -exec chmod 755 {} \;
 
 sudo find /home/$1/$2/www -type f -exec chmod 644 {} \;
 
-sudo chmod 775 -R /home/$1/$2/www/wordpress
+sudo chown $2:www-data -R /home/$1/$2/www
 
-sudo chown $2:www-data -R /home/$1/$2/www/wordpress
+sudo mkdir -p /home/$1/$2/www/wp-content/uploads
 
-sudo mkdir /home/$1/$2/www/wordpress/wp-content/uploads
+sudo chown $2:www-data /home/$1/$2/www/wp-content/uploads -R
 
-sudo chown $2:www-data /home/$1/$2/www/wordpress/wp-content/uploads -R
-
-sudo chmod g+w /home/$1/$2/www/wordpress/wp-content/uploads -R
+sudo chmod g+w /home/$1/$2/www/wp-content/uploads -R
 
 
-sudo mkdir /home/$1/$2/www/wordpress/wp-content/upgrade
+sudo mkdir -p /home/$1/$2/www/wp-content/upgrade
 
-sudo chown $2:www-data /home/$1/$2/www/wordpress/wp-content/upgrade -R
+sudo chown $2:www-data /home/$1/$2/www/wp-content/upgrade -R
 
-sudo chmod g+w /home/$1/$2/www/wordpress/wp-content/upgrade -R
+sudo chmod g+w /home/$1/$2/www/wp-content/upgrade -R
 
 
 echo -n "Creating MySQL user and its database...  "
@@ -203,9 +190,9 @@ echo \"
 define('FS_CHMOD_FILE', 0755);
 define('FS_CHMOD_DIR', 0755);
 define('FS_METHOD', 'direct');
-define('FTP_BASE', '/home/$1/$2/www/wordpress/');
-define('FTP_CONTENT_DIR', '/home/$1/$2/www/wordpress/wp-content/');
-define('FTP_PLUGIN_DIR ', '/home/$1/$2/www/wordpress/wp-content/plugins/');
+define('FTP_BASE', '/home/$1/$2/www/');
+define('FTP_CONTENT_DIR', '/home/$1/$2/www/wp-content/');
+define('FTP_PLUGIN_DIR ', '/home/$1/$2/www/wp-content/plugins/');
 define('FTP_USER', '$2');
 define('FTP_PASS', '$dbpasswd');
 define('FTP_HOST', '$2.$hname:21');
@@ -213,15 +200,15 @@ define('FTP_SSL', false);
 \" |  tee -a  ../wp-config.php > /dev/null
 
 fi
-" |  sudo tee /home/$1/$2/www/wordpress/wp-admin/add_ftp.sh > /dev/null
+" |  sudo tee /home/$1/$2/www/wp-admin/add_ftp.sh > /dev/null
 
 # sed -i '1s/^/if (!defined('"'"'FS_METHOD'"'"')) define('"'"'FS_METHOD'"'"', '"'"'direct'"'"');\n/' /home/$1/$2/www/wordpress/wp-admin/wp-config.php
 
 
 
-cat /home/$1/$2/www/wordpress/wp-admin/install.php | 
-awk '{sub(/<\/body>/,"<?php $output = shell_exec(\"bash add_ftp.sh\"); echo \"<pre>$output</pre>\";?><\/body>" )}1' | 
-sudo tee /home/$1/$2/www/wordpress/wp-admin/install.php > /dev/null
+cat /home/$1/$2/www/wp-admin/install.php |
+awk '{sub(/<\/body>/,"<?php $output = shell_exec(\"bash add_ftp.sh\"); echo \"<pre>$output</pre>\";?><\/body>" )}1' |
+sudo tee /home/$1/$2/www/wp-admin/install.php > /dev/null
 
 case $webserver in
       1)
@@ -259,7 +246,7 @@ case $webserver in
         }
 
         location / {
-          try_files \\\$uri \\\$uri/ /wordpress/index.php?q=\\\$uri\\\$args;
+          try_files \\\$uri \\\$uri/ /index.php?\\\$args;
         }
 
         rewrite /wp-admin\$ \\\$scheme://\\\$host\\\$uri/ permanent;

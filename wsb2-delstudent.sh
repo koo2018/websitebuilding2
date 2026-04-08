@@ -96,7 +96,7 @@ echo "Completed"
 echo ""
 
 echo -n "Deleting MySQL uesr and the database...  "
-mysql -u root -p$rootdbpasswd <<EOF
+sudo mysql -u root -p$rootdbpasswd <<EOF
 DROP USER $1@'localhost';
 DROP DATABASE $1;
 FLUSH PRIVILEGES;

@@ -315,7 +315,7 @@ chmod -R 750 $curuser_home/.wsb2
 
 chmod -R 750 $curuser_home/.log
 
-chmod 640 $curuser_home/.wsb2/www/
+chmod 750 $curuser_home/.wsb2/www/
 
 chmod 700 $curuser_home/.wsb2/bin
 
@@ -336,7 +336,7 @@ apt-get -qq -y install php-gd php-mysql php-curl php-json php-mbstring php-xml p
 
 case $webserver in
   1)
-    echo "Nginx + Apache2"
+    echo "Nginx"
 
     apt-get -y -qq install nginx php-fpm
 
@@ -531,6 +531,10 @@ mv wsb2-newstudent{.new,.sh}
 echo "Настраиваем скрипт delstudent"
 
 sh -c "sed -e 's/rootdbpasswd=\"\"/rootdbpasswd=\"$dbrootpassword\"/' wsb2-delstudent.sh > wsb2-delstudent.new"
+
+mv wsb2-delstudent{.new,.sh}
+
+sh -c "sed -e 's/webserver=\"\"/webserver=\"$webserver\"/' wsb2-delstudent.sh > wsb2-delstudent.new"
 
 mv wsb2-delstudent{.new,.sh}
 
