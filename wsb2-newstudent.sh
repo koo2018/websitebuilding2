@@ -207,7 +207,7 @@ fi
 
 
 cat /home/$1/$2/www/wp-admin/install.php |
-awk '{sub(/<\/body>/,"<?php $output = shell_exec(\"bash add_ftp.sh\"); echo \"<pre>$output</pre>\";?><\/body>" )}1' |
+awk '{sub(/<\/body>/,"<?php $output = shell_exec(\"bash add_ftp.sh\"); echo \"<pre>$output</pre>\";?></body>" )}1' |
 sudo tee /home/$1/$2/www/wp-admin/install.php > /dev/null
 
 case $webserver in
