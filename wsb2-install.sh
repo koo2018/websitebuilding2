@@ -251,85 +251,9 @@ do
 done
 
 
-passwd_ok=''
-prompt=''
+wpinstallpassword="$dbuserpassword"
 
-until [[ $passwd_ok == 'ok' && $wpinstallpassword != '' ]]
-
-do
-
-	echo -ne "\n6.\nEnter a password students will use to access the WordPress installation page\n(students will enter this password once, before setting up WordPress): "
-
-	while IFS= read -p "$prompt" -r -s -n 1 char
-
-	do
-    	# Enter - accept password
-    	if [[ $char == $'\0' ]] ; then
-        	break
-    	fi
-    	# Backspace
-    	if [[ $char == $'\177' ]] ; then
-        	prompt=$'\b \b'
-        	wpinstallpassword="${wpinstallpassword%?}"
-    	else
-        	prompt='*'
-        	wpinstallpassword+="$char"
-    	fi
-	done
-
-	prompt=''
-
-	echo -ne "\nEnter the password once again: "
-
-	while IFS= read -p "$prompt" -r -s -n 1 char
-
-	do
-    	# Enter - accept password
-    	if [[ $char == $'\0' ]] ; then
-        	break
-    	fi
-    	# Backspace
-    	if [[ $char == $'\177' ]] ; then
-        	prompt=$'\b \b'
-        	wpinstallpassword1="${wpinstallpassword1%?}"
-    	else
-        	prompt='*'
-        	wpinstallpassword1+="$char"
-    	fi
-	done
-
-	if [[ $wpinstallpassword == $wpinstallpassword1 && $wpinstallpassword != '' ]] ; then
-
-    	echo -e "\nThe password successfully set"
-
-    	passwd_ok="ok"
-
-	elif [[ $wpinstallpassword == '' ]] ; then
-
-    	echo -e "\nThe password can not be empty"
-
-    	passwd_ok='ok'
-
-    	prompt=''
-
-	else
-
-    	echo -e "\nThe passwords do not match. Try again"
-
-    	ok=''
-
-    	prompt=''
-
-    	wpinstallpassword=''
-
-    	wpinstallpassword1=''
-
-	fi
-
-done
-
-
-echo "7.
+echo "6.
 Would you like to set up HTTPS with a wildcard SSL certificate (via Let's Encrypt + Cloudflare DNS)?
 If you choose HTTP, you can add HTTPS later.
 "
@@ -344,7 +268,7 @@ if [[ $use_ssl == 'y' ]]; then
 
 until [[ $letsencrypt_email != '' ]]
 do
-	read -p $'\n8.\nEnter admin email for Let\'s Encrypt notifications: ' letsencrypt_email
+	read -p $'\n7.\nEnter admin email for Let\'s Encrypt notifications: ' letsencrypt_email
 	if [[ $letsencrypt_email == '' ]] ; then
 		echo -e "Email cannot be empty"
 	fi
@@ -352,9 +276,7 @@ done
 
 until [[ $cfapitoken != '' ]]
 do
-	echo -ne "\n9.\nEnter Cloudflare API token (for wildcard SSL certificate): "
-	read -rs cfapitoken
-	echo
+	read -p $'\n8.\nEnter Cloudflare API token (for wildcard SSL certificate): ' cfapitoken
 	if [[ $cfapitoken == '' ]] ; then
 		echo -e "Token cannot be empty"
 	fi
