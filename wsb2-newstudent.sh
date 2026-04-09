@@ -237,7 +237,7 @@ case $webserver in
         }
 
         location = /wp-admin/install.php {
-          auth_basic \"WordPress Setup\";
+          auth_basic 'WordPress Setup';
           auth_basic_user_file /home/$1/$2/.htpasswd;
           include fastcgi.conf;
           try_files \\\$uri \\\$uri/ =404;
