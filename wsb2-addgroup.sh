@@ -20,5 +20,5 @@ fi
 addgroup "$GROUP"
 mkdir -p "/home/$GROUP"
 chown "root:$GROUP" "/home/$GROUP"
-chmod 750 "/home/$GROUP"
+chmod 711 "/home/$GROUP"
 echo "Group '$GROUP' created"
