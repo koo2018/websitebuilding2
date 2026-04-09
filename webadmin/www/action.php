@@ -45,7 +45,11 @@ switch ($act) {
     case 'add_student':
         $g = strtolower(trim($_POST['group']   ?? ''));
         $s = strtolower(trim($_POST['student'] ?? ''));
-        if ($s !== '' && posix_getpwnam($s) !== false) {
+        if ($s === '') {
+            $ok = false; $msg = "Имя студента не может быть пустым";
+            break;
+        }
+        if (posix_getpwnam($s) !== false) {
             $ok  = false;
             $msg = "Пользователь «$s» уже существует в системе";
             break;

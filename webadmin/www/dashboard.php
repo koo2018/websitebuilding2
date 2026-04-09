@@ -211,7 +211,8 @@ td.actions form+form{margin-left:4px}
         <input type="text" name="student"
                placeholder="логин нового студента"
                pattern="[a-z][a-z0-9_\-]*"
-               maxlength="32">
+               maxlength="32"
+               required>
         <button class="btn btn-primary">Добавить студента</button>
       </form>
 
