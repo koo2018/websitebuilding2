@@ -512,14 +512,6 @@ try_files \$uri \$uri/ =404;
 fastcgi_pass unix:/var/run/php/php$php_version-fpm.sock;
 }
 
-location /netdata/ {
-auth_request /sitemanagement/auth_check.php;
-error_page 401 = /sitemanagement/;
-proxy_pass http://127.0.0.1:19999/;
-proxy_set_header Host \$host;
-proxy_set_header X-Real-IP \$remote_addr;
-}
-
 error_log $curuser_home/.log/$curuser-error.log;
 access_log $curuser_home/.log/$curuser-access.log;
 
@@ -774,11 +766,6 @@ mv /etc/mysql/mariadb.conf.d/50-server.cnf{.new,}
 sh -c "sed -e 's/max_connections        = 100/max_connections        = 200/' /etc/mysql/mariadb.conf.d/50-server.cnf > /etc/mysql/mariadb.conf.d/50-server.cnf.new"
 
 mv /etc/mysql/mariadb.conf.d/50-server.cnf{.new,}
-
-echo "Installing Netdata..."
-wget -q -O /tmp/netdata-kickstart.sh https://get.netdata.cloud/kickstart.sh
-sh /tmp/netdata-kickstart.sh --non-interactive --stable-channel --disable-telemetry 2>/dev/null
-rm -f /tmp/netdata-kickstart.sh
 
 cd $curuser_home
 
