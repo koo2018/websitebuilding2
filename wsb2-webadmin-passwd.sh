@@ -42,6 +42,14 @@ if [ -z "$HASH" ]; then
     exit 1
 fi
 
-sed -i "s|define('WSB2_PASSWORD_HASH'.*|define('WSB2_PASSWORD_HASH', '$HASH');|" "$CONFIG"
+WSB2_NEW_HASH="$HASH" python3 -c "
+import os, re
+path = os.environ['WSB2_CFG_PATH']
+h    = os.environ['WSB2_NEW_HASH']
+txt  = open(path).read()
+txt  = re.sub(r\"define\\('WSB2_PASSWORD_HASH',\\s*'[^']*'\\)\",
+              \"define('WSB2_PASSWORD_HASH', '\" + h + \"')\", txt)
+open(path, 'w').write(txt)
+" WSB2_CFG_PATH="$CONFIG"
 
 echo "Password updated."
