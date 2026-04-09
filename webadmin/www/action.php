@@ -7,6 +7,9 @@ require_once __DIR__ . '/data.php';
 
 wsb2_require_login();
 
+// Student creation copies WordPress and creates a DB — can take over 30s.
+set_time_limit(300);
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: dashboard.php');
     exit;

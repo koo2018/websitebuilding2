@@ -190,7 +190,33 @@ chmod 755 "$APP_DIR"
 find "$APP_DIR" -type f -exec chmod 644 {} \;
 chmod 640 "$APP_DIR/config.php"  # config has password hash — tighter permissions
 
-# --- 8. Install password-change utility ---
+# --- 8. Patch Nginx: add fastcgi_read_timeout for action.php ---
+# Student creation takes >30 s (copies WordPress, creates DB).
+# Without this, Nginx closes the connection before PHP finishes.
+NGINX_CONF="/etc/nginx/sites-available/$TEACHER.conf"
+if [ -f "$NGINX_CONF" ] && ! grep -q "sitemanagement/action.php" "$NGINX_CONF"; then
+    PHP_VER=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')
+    python3 - "$NGINX_CONF" "$PHP_VER" << 'PYEOF'
+import sys
+conf_path, php_ver = sys.argv[1], sys.argv[2]
+with open(conf_path) as f:
+    conf = f.read()
+block = (
+    "location = /sitemanagement/action.php {\n"
+    "include fastcgi.conf;\n"
+    "try_files $uri $uri/ =404;\n"
+    f"fastcgi_pass unix:/var/run/php/php{php_ver}-fpm.sock;\n"
+    "fastcgi_read_timeout 300;\n"
+    "}\n\n"
+)
+conf = conf.replace("location ~ \\.php$", block + "location ~ \\.php$", 1)
+with open(conf_path, "w") as f:
+    f.write(conf)
+PYEOF
+    nginx -t && systemctl reload nginx && echo "Nginx patched: fastcgi_read_timeout 300 for action.php"
+fi
+
+# --- 9. Install password-change utility ---
 wget -q -O /usr/local/sbin/wsb2-webadmin-passwd "$GITHUB_RAW/wsb2-webadmin-passwd.sh" || {
     echo "Failed to download wsb2-webadmin-passwd.sh"
     exit 1
