@@ -178,8 +178,9 @@ unset WSB2_CFG_HASH WSB2_CFG_BIN WSB2_CFG_TEACHER WSB2_CFG_DOMAIN WSB2_CFG_PATH
 
 # --- 7. Set ownership and permissions ---
 chown -R "$TEACHER:www-data" "$APP_DIR"
-chmod 750 "$APP_DIR"
-find "$APP_DIR" -type f -exec chmod 640 {} \;
+chmod 755 "$APP_DIR"
+find "$APP_DIR" -type f -exec chmod 644 {} \;
+chmod 640 "$APP_DIR/config.php"  # config has password hash — tighter permissions
 
 echo ""
 echo "Done!"
