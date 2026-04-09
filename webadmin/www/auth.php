@@ -3,7 +3,7 @@ if (!defined('WSB2_APP')) die();
 
 session_set_cookie_params([
     'lifetime' => 0,
-    'path'     => '/sitemanagement/',
+    'path'     => '/',
     'httponly' => true,
     'samesite' => 'Strict',
 ]);
