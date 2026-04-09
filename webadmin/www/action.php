@@ -45,6 +45,11 @@ switch ($act) {
     case 'add_student':
         $g = strtolower(trim($_POST['group']   ?? ''));
         $s = strtolower(trim($_POST['student'] ?? ''));
+        if (posix_getpwnam($s) !== false) {
+            $ok  = false;
+            $msg = "Пользователь «$s» уже существует в системе";
+            break;
+        }
         $r = wsb2_exec('wa-newstudent.sh', [$g, $s]);
         $ok  = $r['ok'];
         $msg = $ok ? "Студент «$s» добавлен в группу «$g»" : $r['output'];
