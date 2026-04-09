@@ -542,6 +542,10 @@ wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websi
 
 wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/main/wsb2-delstudent.sh
 
+wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/main/wsb2-offsite.sh || true
+
+wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/main/wsb2-onsite.sh || true
+
 wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/main/wsb2-tarbkp.sh || true
 
 wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/main/wsb2-zipbkp.sh || true
