@@ -329,83 +329,6 @@ do
 done
 
 
-passwd_ok=''
-prompt=''
-
-until [[ $passwd_ok == 'ok' && $netdatapassword != '' ]]
-
-do
-
-	echo -ne "\n7.\nEnter a password for Netdata monitoring dashboard\n(available at /netdata/ on the teacher's site): "
-
-	while IFS= read -p "$prompt" -r -s -n 1 char
-
-	do
-    	# Enter - accept password
-    	if [[ $char == $'\0' ]] ; then
-        	break
-    	fi
-    	# Backspace
-    	if [[ $char == $'\177' ]] ; then
-        	prompt=$'\b \b'
-        	netdatapassword="${netdatapassword%?}"
-    	else
-        	prompt='*'
-        	netdatapassword+="$char"
-    	fi
-	done
-
-	prompt=''
-
-	echo -ne "\nEnter the password once again: "
-
-	while IFS= read -p "$prompt" -r -s -n 1 char
-
-	do
-    	# Enter - accept password
-    	if [[ $char == $'\0' ]] ; then
-        	break
-    	fi
-    	# Backspace
-    	if [[ $char == $'\177' ]] ; then
-        	prompt=$'\b \b'
-        	netdatapassword1="${netdatapassword1%?}"
-    	else
-        	prompt='*'
-        	netdatapassword1+="$char"
-    	fi
-	done
-
-	if [[ $netdatapassword == $netdatapassword1 && $netdatapassword != '' ]] ; then
-
-    	echo -e "\nThe password successfully set"
-
-    	passwd_ok="ok"
-
-	elif [[ $netdatapassword == '' ]] ; then
-
-    	echo -e "\nThe password can not be empty"
-
-    	passwd_ok='ok'
-
-    	prompt=''
-
-	else
-
-    	echo -e "\nThe passwords do not match. Try again"
-
-    	ok=''
-
-    	prompt=''
-
-    	netdatapassword=''
-
-    	netdatapassword1=''
-
-	fi
-
-done
-
 apt-get -qq -y install locales
 
 localedef -i ru_RU -f UTF-8 ru_RU.UTF-8
@@ -590,11 +513,11 @@ fastcgi_pass unix:/var/run/php/php$php_version-fpm.sock;
 }
 
 location /netdata/ {
+auth_request /sitemanagement/auth_check.php;
+error_page 401 = /sitemanagement/;
 proxy_pass http://127.0.0.1:19999/;
 proxy_set_header Host \$host;
 proxy_set_header X-Real-IP \$remote_addr;
-auth_basic 'Netdata';
-auth_basic_user_file $curuser_home/.wsb2/.htpasswd-netdata;
 }
 
 error_log $curuser_home/.log/$curuser-error.log;
@@ -856,10 +779,6 @@ echo "Installing Netdata..."
 wget -q -O /tmp/netdata-kickstart.sh https://get.netdata.cloud/kickstart.sh
 sh /tmp/netdata-kickstart.sh --non-interactive --stable-channel --disable-telemetry 2>/dev/null
 rm -f /tmp/netdata-kickstart.sh
-
-echo "teacher:$(openssl passwd -apr1 $netdatapassword)" > $curuser_home/.wsb2/.htpasswd-netdata
-chown $curuser:www-data $curuser_home/.wsb2/.htpasswd-netdata
-chmod 640 $curuser_home/.wsb2/.htpasswd-netdata
 
 cd $curuser_home
 

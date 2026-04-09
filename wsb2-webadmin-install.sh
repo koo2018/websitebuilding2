@@ -153,7 +153,7 @@ visudo -c -f "$SUDOERS_FILE" || {
 
 # --- 5. Download PHP application files ---
 mkdir -p "$APP_DIR"
-for file in index.php dashboard.php action.php logout.php auth.php exec_helper.php data.php; do
+for file in index.php dashboard.php action.php logout.php auth.php exec_helper.php data.php auth_check.php; do
     wget -q -O "$APP_DIR/$file" "$GITHUB_RAW/webadmin/www/$file" || {
         echo "Failed to download $file"
         exit 1
