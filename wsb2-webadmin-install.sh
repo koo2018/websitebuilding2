@@ -81,6 +81,14 @@ fi
 
 echo "Installing..."
 
+# --- 0. Ensure Nginx can traverse the teacher's home directory ---
+# adduser on some Debian systems creates home with 700; Nginx needs at least --x.
+TEACHER_HOME_PERMS=$(stat -c '%a' "$TEACHER_HOME")
+if [ "$TEACHER_HOME_PERMS" = "700" ] || [ "$TEACHER_HOME_PERMS" = "750" ]; then
+    chmod 711 "$TEACHER_HOME"
+    echo "  Fixed: chmod 711 $TEACHER_HOME (was $TEACHER_HOME_PERMS)"
+fi
+
 # --- 1. Create root-owned wrapper directory ---
 mkdir -p "$WRAPPER_DIR"
 chown root:root /opt/wsb2-webadmin

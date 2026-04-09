@@ -294,6 +294,10 @@ adduser --quiet --gecos "" $curuser
 
 usermod -a -G sudo $curuser
 
+# Allow Nginx (www-data) to traverse the home directory.
+# Execute-only for others: Nginx can enter, but cannot list directory contents.
+chmod 711 $curuser_home
+
 echo -e "\nUSER $curuser IS ADDED AND PROVIDED WITH SUDO PRIVILEGES\n\n"
 
 echo -e "STARTING SOFTWARE PACKAGES INSTALLATION. IT TAKES SOME TIME...\n"
