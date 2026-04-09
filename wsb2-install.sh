@@ -250,13 +250,82 @@ do
 
 done
 
-until [[ $wpinstallpassword != '' ]]
+
+passwd_ok=''
+prompt=''
+
+until [[ $passwd_ok == 'ok' && $wpinstallpassword != '' ]]
+
 do
+
 	echo -ne "\n6.\nEnter a password students will use to access the WordPress installation page\n(students will enter this password once, before setting up WordPress): "
-	read -r wpinstallpassword
-	if [[ $wpinstallpassword == '' ]] ; then
-		echo -e "The password can not be empty"
+
+	while IFS= read -p "$prompt" -r -s -n 1 char
+
+	do
+    	# Enter - accept password
+    	if [[ $char == $'\0' ]] ; then
+        	break
+    	fi
+    	# Backspace
+    	if [[ $char == $'\177' ]] ; then
+        	prompt=$'\b \b'
+        	wpinstallpassword="${wpinstallpassword%?}"
+    	else
+        	prompt='*'
+        	wpinstallpassword+="$char"
+    	fi
+	done
+
+	prompt=''
+
+	echo -ne "\nEnter the password once again: "
+
+	while IFS= read -p "$prompt" -r -s -n 1 char
+
+	do
+    	# Enter - accept password
+    	if [[ $char == $'\0' ]] ; then
+        	break
+    	fi
+    	# Backspace
+    	if [[ $char == $'\177' ]] ; then
+        	prompt=$'\b \b'
+        	wpinstallpassword1="${wpinstallpassword1%?}"
+    	else
+        	prompt='*'
+        	wpinstallpassword1+="$char"
+    	fi
+	done
+
+	if [[ $wpinstallpassword == $wpinstallpassword1 && $wpinstallpassword != '' ]] ; then
+
+    	echo -e "\nThe password successfully set"
+
+    	passwd_ok="ok"
+
+	elif [[ $wpinstallpassword == '' ]] ; then
+
+    	echo -e "\nThe password can not be empty"
+
+    	passwd_ok='ok'
+
+    	prompt=''
+
+	else
+
+    	echo -e "\nThe passwords do not match. Try again"
+
+    	ok=''
+
+    	prompt=''
+
+    	wpinstallpassword=''
+
+    	wpinstallpassword1=''
+
 	fi
+
 done
 
 apt-get -qq -y install locales
