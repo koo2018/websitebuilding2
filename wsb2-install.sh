@@ -48,7 +48,7 @@ read  -n 1 -s -p "Please press any key to continue or ctrl-c for abort..."
 
 clear
 
-echo "Firstly, we have to ask you 7 questions:
+echo "Firstly, we have to ask you a few questions:
 "
 
 echo "1.
@@ -329,6 +329,39 @@ do
 done
 
 
+echo "7.
+Would you like to set up HTTPS with a wildcard SSL certificate (via Let's Encrypt + Cloudflare DNS)?
+If you choose HTTP, you can add HTTPS later.
+"
+until [[ $use_ssl == 'y' || $use_ssl == 'n' ]]
+do
+  read -p "Use HTTPS? ([y]/n): " use_ssl
+  use_ssl=${use_ssl:-y}
+  echo
+done
+
+if [[ $use_ssl == 'y' ]]; then
+
+until [[ $letsencrypt_email != '' ]]
+do
+	read -p $'\n8.\nEnter admin email for Let\'s Encrypt notifications: ' letsencrypt_email
+	if [[ $letsencrypt_email == '' ]] ; then
+		echo -e "Email cannot be empty"
+	fi
+done
+
+until [[ $cfapitoken != '' ]]
+do
+	echo -ne "\n9.\nEnter Cloudflare API token (for wildcard SSL certificate): "
+	read -rs cfapitoken
+	echo
+	if [[ $cfapitoken == '' ]] ; then
+		echo -e "Token cannot be empty"
+	fi
+done
+
+fi
+
 apt-get -qq -y install locales
 
 localedef -i ru_RU -f UTF-8 ru_RU.UTF-8
@@ -341,11 +374,15 @@ echo "So... the configuration we have:"
 
 echo -e "\nThe main user at the project:\t\t\t$curuser"
 
-echo -e "\nThe site address for the project:\t\thttps://$domain"
-
-echo -e "\nThe site address for the $curuser:\t\t\thttps://$curuser.$domain"
-
-echo -e "\nOther sites are on\t\t\t\thttps://<username>.$domain"
+if [[ $use_ssl == 'y' ]]; then
+  echo -e "\nThe site address for the project:\t\thttps://$domain"
+  echo -e "\nThe site address for the $curuser:\t\t\thttps://$curuser.$domain"
+  echo -e "\nOther sites are on\t\t\t\thttps://<username>.$domain"
+else
+  echo -e "\nThe site address for the project:\t\thttp://$domain"
+  echo -e "\nThe site address for the $curuser:\t\t\thttp://$curuser.$domain"
+  echo -e "\nOther sites are on\t\t\t\thttp://<username>.$domain"
+fi
 
 echo
 
@@ -428,7 +465,11 @@ case $webserver in
   1)
     echo "Nginx"
 
-    apt-get -y -qq install nginx php-fpm
+    if [[ $use_ssl == 'y' ]]; then
+      apt-get -y -qq install nginx php-fpm certbot python3-certbot-dns-cloudflare
+    else
+      apt-get -y -qq install nginx php-fpm
+    fi
 
     php_version=`php -i | grep "Loaded Configuration File" | awk -F "=>" '{print $2}' | awk -F "/" '{print $4}'`
 
@@ -475,6 +516,61 @@ case $webserver in
 
 }" > /etc/nginx/sites-available/default
 
+    if [[ $use_ssl == 'y' ]]; then
+
+echo "server {
+listen 80;
+listen [::]:80;
+server_name $curuser.$domain;
+return 301 https://\$host\$request_uri;
+}
+
+server {
+listen 443 ssl;
+listen [::]:443 ssl;
+ssl_certificate     /etc/letsencrypt/live/$domain/fullchain.pem;
+ssl_certificate_key /etc/letsencrypt/live/$domain/privkey.pem;
+
+root $curuser_home/.wsb2/www/;
+
+index index.php index.html index.htm;
+
+server_name $curuser.$domain;
+
+client_max_body_size 64M;
+
+location ~ ^/phpmyadmin/.+\.php$ {
+root /usr/share/;
+include fastcgi.conf;
+fastcgi_pass unix:/var/run/php/php$php_version-fpm.sock;
+}
+
+location /phpmyadmin {
+root /usr/share/;
+index index.php;
+try_files \$uri \$uri/ =404;
+}
+
+location = /sitemanagement/action.php {
+include fastcgi.conf;
+try_files \$uri \$uri/ =404;
+fastcgi_pass unix:/var/run/php/php$php_version-fpm.sock;
+fastcgi_read_timeout 300;
+}
+
+location ~ \.php$ {
+include fastcgi.conf;
+try_files \$uri \$uri/ =404;
+fastcgi_pass unix:/var/run/php/php$php_version-fpm.sock;
+}
+
+error_log $curuser_home/.log/$curuser-error.log;
+access_log $curuser_home/.log/$curuser-access.log;
+
+}" > /etc/nginx/sites-available/$curuser.conf
+
+    else
+
 echo "server {
 listen 80;
 listen [::]:80;
@@ -517,8 +613,27 @@ access_log $curuser_home/.log/$curuser-access.log;
 
 }" > /etc/nginx/sites-available/$curuser.conf
 
+    fi
+
     ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
     ln -s /etc/nginx/sites-available/$curuser.conf /etc/nginx/sites-enabled/
+
+    if [[ $use_ssl == 'y' ]]; then
+      # Obtain wildcard SSL certificate before starting Nginx with SSL config
+      mkdir -p /etc/cloudflare
+      echo "dns_cloudflare_api_token = $cfapitoken" > /etc/cloudflare/credentials.ini
+      chmod 600 /etc/cloudflare/credentials.ini
+
+      echo "Obtaining wildcard SSL certificate..."
+      certbot certonly \
+          --dns-cloudflare \
+          --dns-cloudflare-credentials /etc/cloudflare/credentials.ini \
+          -d $domain \
+          -d "*.$domain" \
+          --agree-tos \
+          --non-interactive \
+          -m $letsencrypt_email
+    fi
 
     systemctl restart nginx
 
@@ -673,6 +788,12 @@ sh -c "sed -e 's/phpver=\"\"/phpver=\"$php_version\"/' wsb2-newstudent.sh > wsb2
 mv wsb2-newstudent{.new,.sh}
 
 sh -c "sed -e 's/wpinstpasswd=\"\"/wpinstpasswd=\"$wpinstallpassword\"/' wsb2-newstudent.sh > wsb2-newstudent.new"
+
+mv wsb2-newstudent{.new,.sh}
+
+use_ssl_val=""
+[[ $use_ssl == 'y' ]] && use_ssl_val="1"
+sh -c "sed -e 's/use_ssl=\"\"/use_ssl=\"$use_ssl_val\"/' wsb2-newstudent.sh > wsb2-newstudent.new"
 
 mv wsb2-newstudent{.new,.sh}
 

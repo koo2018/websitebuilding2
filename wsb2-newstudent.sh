@@ -13,6 +13,8 @@ phpver=""
 
 wpinstpasswd=""
 
+use_ssl=""
+
 
 if [ "$hname" = "" ]; then
 echo -e "Missing domain name. Check \$hname. \n"
@@ -209,10 +211,8 @@ echo "Done"
 case $webserver in
       1)
 
-      sudo sh -c "echo \"server {
-        listen 80;
-        listen [::]:80;
-
+      _nginx_body() {
+        echo "
         root /home/$1/$2/www/;
 
         index index.php index.html index.htm;
@@ -240,28 +240,52 @@ case $webserver in
           auth_basic 'WordPress Setup';
           auth_basic_user_file /home/$1/$2/.htpasswd;
           include fastcgi.conf;
-          try_files \\\$uri \\\$uri/ =404;
+          try_files \$uri \$uri/ =404;
           fastcgi_index index.php;
           fastcgi_pass unix:/var/run/php/php${phpver}-fpm.sock;
         }
 
-        location ~ \.php$ {
+        location ~ \.php\$ {
           include fastcgi.conf;
-          try_files \\\$uri \\\$uri/ =404;
+          try_files \$uri \$uri/ =404;
           fastcgi_index index.php;
           fastcgi_pass unix:/var/run/php/php${phpver}-fpm.sock;
         }
 
         location / {
-          try_files \\\$uri \\\$uri/ /index.php?\\\$args;
+          try_files \$uri \$uri/ /index.php?\$args;
         }
 
-        rewrite /wp-admin\$ \\\$scheme://\\\$host\\\$uri/ permanent;
+        rewrite /wp-admin\$ \$scheme://\$host\$uri/ permanent;
 
         error_log /home/$1/$2/.log/error.log;
         access_log /home/$1/$2/.log/access.log;
+        }"
+      }
 
-    }\" > /etc/nginx/sites-available/$2.conf"
+      if [ "$use_ssl" = "1" ]; then
+        {
+          echo "server {"
+          echo "  listen 80;"
+          echo "  listen [::]:80;"
+          echo "  server_name $2.$hname;"
+          echo "  return 301 https://\$host\$request_uri;"
+          echo "}"
+          echo "server {"
+          echo "  listen 443 ssl;"
+          echo "  listen [::]:443 ssl;"
+          echo "  ssl_certificate     /etc/letsencrypt/live/$hname/fullchain.pem;"
+          echo "  ssl_certificate_key /etc/letsencrypt/live/$hname/privkey.pem;"
+          _nginx_body "$1" "$2"
+        } | sudo tee /etc/nginx/sites-available/$2.conf > /dev/null
+      else
+        {
+          echo "server {"
+          echo "  listen 80;"
+          echo "  listen [::]:80;"
+          _nginx_body "$1" "$2"
+        } | sudo tee /etc/nginx/sites-available/$2.conf > /dev/null
+      fi
 
       sudo ln -s /etc/nginx/sites-available/$2.conf /etc/nginx/sites-enabled/
 
