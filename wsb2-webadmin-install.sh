@@ -190,10 +190,18 @@ chmod 755 "$APP_DIR"
 find "$APP_DIR" -type f -exec chmod 644 {} \;
 chmod 640 "$APP_DIR/config.php"  # config has password hash — tighter permissions
 
+# --- 8. Install password-change utility ---
+wget -q -O /usr/local/sbin/wsb2-webadmin-passwd "$GITHUB_RAW/wsb2-webadmin-passwd.sh" || {
+    echo "Failed to download wsb2-webadmin-passwd.sh"
+    exit 1
+}
+chmod 700 /usr/local/sbin/wsb2-webadmin-passwd
+
 echo ""
 echo "Done!"
 echo ""
-echo "  Web admin : http://$TEACHER.$DOMAIN/sitemanagement/"
+echo "  Web admin       : http://$TEACHER.$DOMAIN/sitemanagement/"
+echo "  Change password : sudo wsb2-webadmin-passwd"
 echo ""
 echo "  To remove : sudo bash wsb2-webadmin-remove.sh"
 echo ""

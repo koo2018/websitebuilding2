@@ -49,5 +49,10 @@ if [ -f "/etc/sudoers.d/wsb2-webadmin" ]; then
     echo "Removed: /etc/sudoers.d/wsb2-webadmin"
 fi
 
+if [ -f "/usr/local/sbin/wsb2-webadmin-passwd" ]; then
+    rm -f /usr/local/sbin/wsb2-webadmin-passwd
+    echo "Removed: /usr/local/sbin/wsb2-webadmin-passwd"
+fi
+
 echo ""
 echo "Web admin removed."
