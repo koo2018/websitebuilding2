@@ -646,8 +646,6 @@ cd $curuser_home/.wsb2/bin
 
 sh -c "sed -e 's/hname=\"\"/hname=\"$domain\"/' wsb2-newstudent.sh > wsb2-newstudent.new"
 
-echo `pwd`
-
 mv wsb2-newstudent{.new,.sh}
 
 sh -c "sed -e 's/rootdbpasswd=\"\"/rootdbpasswd=\"$dbrootpassword\"/' wsb2-newstudent.sh > wsb2-newstudent.new"
@@ -708,7 +706,7 @@ chown $curuser:$curuser *
 
 chmod 700 *
 
-if mysql -uroot -e "SELECT 1;" 2>/dev/null; then
+if mysql -uroot -e "SELECT 1;" >/dev/null 2>&1; then
     MYSQL_ROOT="mysql -uroot"
 else
     MYSQL_ROOT="mysql -uroot -p${dbrootpassword}"
