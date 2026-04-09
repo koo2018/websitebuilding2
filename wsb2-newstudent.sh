@@ -11,6 +11,8 @@ webserver=""
 
 phpver=""
 
+wpinstpasswd=""
+
 
 if [ "$hname" = "" ]; then
 echo -e "Missing domain name. Check \$hname. \n"
@@ -29,6 +31,11 @@ fi
 
 if [ "$webserver" = "" ]; then
 echo -e "Missing webserver specification. Check \$webserver. \n"
+stop_var=1
+fi
+
+if [ "$wpinstpasswd" = "" ]; then
+echo -e "Missing WP install page password. Check \$wpinstpasswd. \n"
 stop_var=1
 fi
 
@@ -180,6 +187,12 @@ sudo chown $2:www-data /home/$1/$2/.log
 
 sudo chmod g+w /home/$1/$2/.log
 
+echo -n "Creating .htpasswd for WordPress install protection...  "
+echo "$2:$(openssl passwd -apr1 $wpinstpasswd)" | sudo tee /home/$1/$2/.htpasswd > /dev/null
+sudo chown $2:www-data /home/$1/$2/.htpasswd
+sudo chmod 640 /home/$1/$2/.htpasswd
+echo "Done"
+
 sudo sh -c "echo \"<?php phpinfo(); ?>\" > /home/$1/$2/www/phpinfo.php"
 
 echo -n "Creating wp-config.php...  "
@@ -221,6 +234,15 @@ case $webserver in
           allow all;
           log_not_found off;
           access_log off;
+        }
+
+        location = /wp-admin/install.php {
+          auth_basic \"WordPress Setup\";
+          auth_basic_user_file /home/$1/$2/.htpasswd;
+          include fastcgi.conf;
+          try_files \\\$uri \\\$uri/ =404;
+          fastcgi_index index.php;
+          fastcgi_pass unix:/var/run/php/php${phpver}-fpm.sock;
         }
 
         location ~ \.php$ {
@@ -269,6 +291,14 @@ case $webserver in
               php_value upload_max_filesize 64M
               php_value post_max_size 64M
       </Directory>
+
+      <Files \"wp-admin/install.php\">
+              AuthType Basic
+              AuthName \"WordPress Setup\"
+              AuthUserFile /home/$1/$2/.htpasswd
+              Require valid-user
+      </Files>
+
       ErrorLog ${APACHE_LOG_DIR}/error.log
           CustomLog ${APACHE_LOG_DIR}/access.log combined
       </VirtualHost>

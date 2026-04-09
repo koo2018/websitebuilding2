@@ -250,6 +250,15 @@ do
 
 done
 
+until [[ $wpinstallpassword != '' ]]
+do
+	echo -ne "\n6.\nEnter a password students will use to access the WordPress installation page\n(students will enter this password once, before setting up WordPress): "
+	read -r wpinstallpassword
+	if [[ $wpinstallpassword == '' ]] ; then
+		echo -e "The password can not be empty"
+	fi
+done
+
 apt-get -qq -y install locales
 
 localedef -i ru_RU -f UTF-8 ru_RU.UTF-8
@@ -585,6 +594,10 @@ sh -c "sed -e 's/webserver=\"\"/webserver=\"$webserver\"/' wsb2-newstudent.sh > 
 mv wsb2-newstudent{.new,.sh}
 
 sh -c "sed -e 's/phpver=\"\"/phpver=\"$php_version\"/' wsb2-newstudent.sh > wsb2-newstudent.new"
+
+mv wsb2-newstudent{.new,.sh}
+
+sh -c "sed -e 's/wpinstpasswd=\"\"/wpinstpasswd=\"$wpinstallpassword\"/' wsb2-newstudent.sh > wsb2-newstudent.new"
 
 mv wsb2-newstudent{.new,.sh}
 
