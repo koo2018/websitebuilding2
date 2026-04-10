@@ -216,18 +216,25 @@ PYEOF
     nginx -t && systemctl reload nginx && echo "Nginx patched: fastcgi_read_timeout 300 for action.php"
 fi
 
-# --- 9. Install password-change utility ---
+# --- 9. Install password-change and update utilities ---
 wget -q -O /usr/local/sbin/wsb2-webadmin-passwd "$GITHUB_RAW/wsb2-webadmin-passwd.sh" || {
     echo "Failed to download wsb2-webadmin-passwd.sh"
     exit 1
 }
 chmod 700 /usr/local/sbin/wsb2-webadmin-passwd
 
+wget -q -O /usr/local/sbin/wsb2-webadmin-update "$GITHUB_RAW/wsb2-webadmin-update.sh" || {
+    echo "Failed to download wsb2-webadmin-update.sh"
+    exit 1
+}
+chmod 700 /usr/local/sbin/wsb2-webadmin-update
+
 echo ""
 echo "Done!"
 echo ""
 echo "  Web admin       : http://$TEACHER.$DOMAIN/sitemanagement/"
 echo "  Change password : sudo wsb2-webadmin-passwd"
+echo "  Update files    : sudo wsb2-webadmin-update"
 echo ""
 echo "  To remove : sudo bash wsb2-webadmin-remove.sh"
 echo ""
