@@ -223,18 +223,19 @@ wget -q -O /usr/local/sbin/wsb2-webadmin-passwd "$GITHUB_RAW/wsb2-webadmin-passw
 }
 chmod 700 /usr/local/sbin/wsb2-webadmin-passwd
 
-wget -q -O /usr/local/sbin/wsb2-webadmin-update "$GITHUB_RAW/wsb2-webadmin-update.sh" || {
+wget -q -O "$BIN_DIR/wsb2-webadmin-update" "$GITHUB_RAW/wsb2-webadmin-update.sh" || {
     echo "Failed to download wsb2-webadmin-update.sh"
     exit 1
 }
-chmod 700 /usr/local/sbin/wsb2-webadmin-update
+chown "$TEACHER:$TEACHER" "$BIN_DIR/wsb2-webadmin-update"
+chmod 700 "$BIN_DIR/wsb2-webadmin-update"
 
 echo ""
 echo "Done!"
 echo ""
 echo "  Web admin       : http://$TEACHER.$DOMAIN/sitemanagement/"
 echo "  Change password : sudo wsb2-webadmin-passwd"
-echo "  Update files    : sudo wsb2-webadmin-update"
+echo "  Update files    : wsb2-webadmin-update"
 echo ""
 echo "  To remove : sudo bash wsb2-webadmin-remove.sh"
 echo ""
