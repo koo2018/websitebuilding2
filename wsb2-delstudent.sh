@@ -91,14 +91,14 @@ echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 echo ""
 
 echo -n "Deleting user "$1"...  "
-sudo deluser  --remove-home $1
+sudo userdel -r $1
 echo "Completed"
 echo ""
 
 echo -n "Deleting MySQL uesr and the database...  "
 sudo mysql -u root -p$rootdbpasswd <<EOF
-DROP USER $1@'localhost';
-DROP DATABASE $1;
+DROP USER '$1'@'localhost';
+DROP DATABASE \`$1\`;
 FLUSH PRIVILEGES;
 EOF
 echo "Completed"
