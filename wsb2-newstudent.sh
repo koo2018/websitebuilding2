@@ -173,10 +173,10 @@ sudo chmod g+w /home/$1/$2/www/wp-content -R
 
 echo -n "Creating MySQL user and its database...  "
 sudo mysql -u root -p$rootdbpasswd <<EOF || exit 1
-CREATE USER $2@'localhost' IDENTIFIED BY '$dbpasswd';
-create database $2;
-grant usage on *.* to $2@localhost identified by '$dbpasswd';
-grant all privileges on $2.* to $2@localhost;
+CREATE USER '$2'@'localhost' IDENTIFIED BY '$dbpasswd';
+create database \`$2\`;
+grant usage on *.* to '$2'@'localhost' identified by '$dbpasswd';
+grant all privileges on \`$2\`.* to '$2'@'localhost';
 FLUSH PRIVILEGES;
 EOF
 CREATED_DB=1
