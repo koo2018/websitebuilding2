@@ -300,6 +300,8 @@ WordPress работает с `FS_METHOD = direct` — PHP пишет файлы
 
 **Нет HTTPS из коробки** — виртуальные хосты настраиваются на HTTP (порт 80). Для HTTPS настройте Let's Encrypt / Certbot отдельно после установки.
 
+**Nginx + Yoast SEO sitemap** — шаблон nginx-конфига содержит отдельный блок `location ~* sitemap.*\.xml$` перед блоком статических файлов. Без него nginx отдаёт `.xml` как статику с `expires max` и возвращает 404 для виртуальных URL Yoast (`sitemap_index.xml`, `post-sitemap.xml` и т.д.). Блок направляет эти запросы в WordPress через `index.php`. Apache-конфиг не затронут — `.htaccess` WordPress обрабатывает это автоматически.
+
 ---
 
 ## Тестирование
