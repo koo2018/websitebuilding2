@@ -52,6 +52,8 @@ WordPress работает с `FS_METHOD = direct` (прямая запись б
 
 - При `apt install` phpMyAdmin пытается создать своего пользователя в MySQL до запуска MariaDB — в логе установки появляются ошибки `Can't connect to local server through socket`. Это штатная ситуация: скрипт настраивает phpMyAdmin повторно после старта MariaDB.
 
+- **Nginx + Yoast SEO sitemap**: шаблон nginx-конфига в `wsb2-newstudent.sh` содержит отдельный `location ~* sitemap.*\.xml$` перед блоком статических файлов. Без него nginx перехватывает все `.xml` как статику (`expires max`) и возвращает 404 для виртуальных URL Yoast (`sitemap_index.xml`, `post-sitemap.xml` и т.д.). Блок передаёт эти запросы в WordPress через `index.php`. Apache-конфиг не затронут — `.htaccess` WordPress обрабатывает это корректно.
+
 ## Тестирование
 
 Автоматических тестов, линтеров и сборки нет. Изменения проверяются вручную — развёртыванием на сервере Debian 12 и запуском скриптов.
