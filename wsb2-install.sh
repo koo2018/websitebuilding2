@@ -677,6 +677,9 @@ wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websi
 
 wget -P $curuser_home/.wsb2/bin/ https://raw.githubusercontent.com/koo2018/websitebuilding2/main/wsb2-zipbkp.sh || true
 
+wget -q -O /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+chmod +x /usr/local/bin/wp
+
 chown -R $curuser:$curuser $curuser_home/.wsb2/bin/*
 
 chmod u+x $curuser_home/.wsb2/bin/*

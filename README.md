@@ -39,7 +39,7 @@
 | Веб-сервер | Nginx **или** Apache2 |
 | PHP | 8.x с FPM (устанавливается автоматически) |
 | СУБД | MariaDB (устанавливается автоматически) |
-| Прочее | ProFTPD, Memcached, phpMyAdmin (устанавливаются автоматически) |
+| Прочее | ProFTPD, Memcached, phpMyAdmin, WP-CLI (устанавливаются автоматически) |
 
 > **Важно:** Скрипты завершаются с ошибкой на дистрибутивах, отличных от Debian 12/13.
 
@@ -68,7 +68,7 @@ apt update && apt install wget && wget https://raw.githubusercontent.com/koo2018
 ### Что делает скрипт установки
 
 - Создаёт Unix-аккаунт преподавателя с sudo-правами
-- Устанавливает: Nginx/Apache2, PHP-FPM, MariaDB, phpMyAdmin, ProFTPD, Memcached и утилиты
+- Устанавливает: Nginx/Apache2, PHP-FPM, MariaDB, phpMyAdmin, ProFTPD, Memcached, WP-CLI и утилиты
 - Увеличивает лимиты PHP: `upload_max_filesize` и `post_max_size` до 64 МБ
 - Скачивает WordPress (`latest-ru_RU.zip`) в `~/.wsb2/wordpress/`
 - Скачивает вспомогательные скрипты (`wsb2-newstudent.sh`, `wsb2-delstudent.sh`, скрипты бэкапа) в `~/.wsb2/bin/` и встраивает в них домен, пароли и версию PHP через `sed`

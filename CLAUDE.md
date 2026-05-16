@@ -37,6 +37,7 @@
 - PHP 8.4 с FPM, MariaDB, ProFTPD, Memcached
 - Веб-сервер: Nginx (вариант 1) или Apache2 (вариант 2)
 - WordPress русской локали (`latest-ru_RU.zip`) скачивается во время установки
+- WP-CLI устанавливается в `/usr/local/bin/wp` — используется для переноса WordPress-сайтов на новый домен (`wp search-replace`)
 
 ## Права доступа к файлам WordPress
 
